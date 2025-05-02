@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f9f5f1;
   --foreground: #171717;
+  --primary: #cb843e;
+  --secondary: #3c4e18;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -23,4 +27,20 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px inset var(--tw-bg-background) !important;
+    box-shadow: 0 0 0px 1000px inset var(--tw-bg-background) !important;
+    -webkit-text-fill-color: var(--tw-text-foreground) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
