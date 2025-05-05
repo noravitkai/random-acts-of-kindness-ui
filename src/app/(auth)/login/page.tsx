@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLogin, LoginData } from "@/hooks/auth/useLogin";
+import { useAuth, LoginData } from "@/hooks/auth/useAuth";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 
@@ -10,7 +10,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
  * Manage form state, perform client-side validation, and call the login API
  */
 export default function LoginPage() {
-  const { login, error: serverError } = useLogin();
+  const { login, error: serverError } = useAuth();
   const [localError, setLocalError] = useState<string | null>(null);
   const router = useRouter();
 

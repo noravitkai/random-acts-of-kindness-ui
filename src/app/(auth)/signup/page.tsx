@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, ChangeEvent, FormEvent } from "react";
-import { useRegister, RegisterData } from "@/hooks/auth/useRegister";
+import { useAuth, RegisterData } from "@/hooks/auth/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
  * Manage form state, perform client-side validation, and call the registration API
  */
 export default function RegisterPage() {
-  const { register, error: serverError } = useRegister(); // Rename hook's error to serverError so it doesn't clash with form errors
+  const { register, error: serverError } = useAuth(); // Rename hook's error to serverError so it doesn't clash with form errors
   const router = useRouter(); // Router for redirection after successful registration
 
   // Form data state
