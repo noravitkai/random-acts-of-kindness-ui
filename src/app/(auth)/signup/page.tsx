@@ -66,7 +66,7 @@ export default function RegisterPage() {
 
     try {
       const user = await register(formData);
-      console.log("Registered user:", user);
+      console.log("User signed up:", user);
       router.push("/login");
     } catch {
       // TODO: Display UI feedback

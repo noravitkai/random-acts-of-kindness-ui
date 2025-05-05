@@ -9,6 +9,12 @@ export type RegisterData = {
   password: string;
 };
 
+// Response from the server when user signs up
+interface RegisterResponse {
+  message: string;
+  data: User;
+}
+
 /**
  * Register a new user
  * Return register() and error
@@ -25,14 +31,16 @@ export function useRegister() {
   async function register(data: RegisterData): Promise<User> {
     setError(null); // Reset error state
     try {
-      const user = await fetcher<User>( // Send request
+      // Call the API and get the wrapped response
+      const res = await fetcher<RegisterResponse>(
         "http://localhost:4000/api/user/register",
         {
           method: "POST",
           body: JSON.stringify(data),
         }
       );
-      if (!user) throw new Error("No user returned"); // Check if user is returned
+      if (!res) throw new Error("No response from server"); // Check if response is valid
+      const user = res.data; // Actual user object
       return user;
     } catch (error: unknown) {
       // Catch any potential errors

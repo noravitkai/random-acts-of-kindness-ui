@@ -45,7 +45,7 @@ export function useLogin() {
     } catch (err: unknown) {
       // Catch any potential errors
       console.error("Login error:", err);
-      const message = "Login failed. Check your email/password.";
+      const message = "Login failed. Please check your credentials.";
       setError(message); // Update state to show error message in the form
       throw new Error(message);
     }

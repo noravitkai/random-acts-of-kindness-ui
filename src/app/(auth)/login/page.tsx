@@ -55,7 +55,8 @@ export default function LoginPage() {
     if (!validateForm()) return;
 
     try {
-      await login(formData);
+      const user = await login(formData);
+      console.log("User logged in:", user);
       router.push("/");
     } catch {
       console.log("Login failed:", serverError);

@@ -11,8 +11,19 @@ export async function fetcher<T>(
   url: string,
   init?: RequestInit
 ): Promise<T | null> {
+  // Build headers and include JSON content type
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  // Add auth token from localStorage in browser
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("lsToken");
+    if (token) {
+      headers["auth-token"] = token;
+    }
+  }
   const response = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...init,
   });
   if (!response.ok) {
