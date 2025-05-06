@@ -44,7 +44,6 @@ export function useCompletedActs(userId: string) {
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [acts, setActs] = useState<Record<string, KindnessAct>>({}); // Store fetched acts by ID
 
   useEffect(() => {
     if (!userId) {
@@ -55,21 +54,7 @@ export function useCompletedActs(userId: string) {
     fetcher<CompletedAct[]>(`http://localhost:4000/api/completed/${userId}`)
       .then((data) => {
         if (data) {
-          setCompleted(data || []);
-          data.forEach((completedAct) => {
-            fetcher<KindnessAct>(
-              `http://localhost:4000/api/acts/${completedAct.act}`
-            )
-              .then((act) => {
-                if (act) {
-                  setActs((prevActs) => ({
-                    ...prevActs,
-                    [completedAct.act]: act,
-                  }));
-                }
-              })
-              .catch((err) => setError(err.message));
-          });
+          setCompleted(data);
         } else {
           setError("No completed acts found");
         }
@@ -78,7 +63,7 @@ export function useCompletedActs(userId: string) {
       .finally(() => setLoading(false));
   }, [userId]);
 
-  return { completed, loading, error, acts };
+  return { completed, loading, error };
 }
 
 /**
