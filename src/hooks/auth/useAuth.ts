@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fetcher } from "@/utils/fetcher";
 import type { User } from "@/types/user";
+import { jwtDecode } from "jwt-decode";
+
+type JWTPayload = {
+  userId: string;
+  username: string;
+  email: string;
+  role: "user" | "admin";
+};
 
 // Data sent to the server when user logs in
 export type LoginData = {
@@ -24,6 +32,24 @@ export function useAuth() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("lsToken");
+    if (token) {
+      try {
+        const payload = jwtDecode<JWTPayload>(token);
+        setUser({
+          id: payload.userId,
+          username: payload.username,
+          email: payload.email,
+          role: payload.role,
+        });
+      } catch {
+        // invalid token
+        localStorage.removeItem("lsToken");
+      }
+    }
+  }, []);
 
   /**
    * Call login API with form data

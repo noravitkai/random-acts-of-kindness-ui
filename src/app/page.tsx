@@ -1,10 +1,10 @@
 "use client";
 
 import ActCard from "@/components/acts/ActCard";
-import { useActs } from "@/hooks/acts/useActs";
+import { useKindnessActs } from "@/hooks/acts/useActs";
 
 export default function HomePage() {
-  const { acts, loading, error } = useActs();
+  const { acts, loading, error } = useKindnessActs();
 
   if (loading) return <p className="p-8">Loading acts…</p>;
   if (error) return <p className="p-8 text-red-600">Error: {error}</p>;

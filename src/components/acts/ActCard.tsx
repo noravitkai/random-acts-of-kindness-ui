@@ -1,6 +1,6 @@
 "use client";
 
-import type { KindnessAct } from "@/types/act";
+import type { KindnessAct } from "@/types/kindnessAct";
 
 interface ActCardProps {
   act: KindnessAct;

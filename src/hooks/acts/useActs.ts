@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetcher } from "@/utils/fetcher";
-import type { KindnessAct, NewAct } from "@/types/act";
+import type { KindnessAct, NewAct } from "@/types/kindnessAct";
+import type { CompletedAct } from "@/types/completedAct";
 
 /**
  * Fetch approved kindness acts
@@ -9,16 +10,16 @@ import type { KindnessAct, NewAct } from "@/types/act";
  *   - loading: boolean indicating fetch in progress
  *   - error: string error message or null
  */
-export function useActs() {
+export function useKindnessActs() {
   const [acts, setActs] = useState<KindnessAct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchActs = () => {
+    setLoading(true);
     fetcher<KindnessAct[]>("http://localhost:4000/api/acts")
       .then((data) => {
-        const approved = data?.filter((a) => a.status === "approved") || [];
-        setActs(approved);
+        setActs(data || []);
       })
       .catch((err: Error) => {
         setError(err.message);
@@ -26,9 +27,58 @@ export function useActs() {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchActs();
   }, []);
 
-  return { acts, loading, error };
+  return { acts, loading, error, refetch: fetchActs };
+}
+
+/**
+ * Fetch the list of acts a user has completed
+ * @param userId – ID of the specific user
+ */
+export function useCompletedActs(userId: string) {
+  const [completed, setCompleted] = useState<CompletedAct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [acts, setActs] = useState<Record<string, KindnessAct>>({}); // Store fetched acts by ID
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    fetcher<CompletedAct[]>(`http://localhost:4000/api/completed/${userId}`)
+      .then((data) => {
+        if (data) {
+          setCompleted(data || []);
+          data.forEach((completedAct) => {
+            fetcher<KindnessAct>(
+              `http://localhost:4000/api/acts/${completedAct.act}`
+            )
+              .then((act) => {
+                if (act) {
+                  setActs((prevActs) => ({
+                    ...prevActs,
+                    [completedAct.act]: act,
+                  }));
+                }
+              })
+              .catch((err) => setError(err.message));
+          });
+        } else {
+          setError("No completed acts found");
+        }
+      })
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  return { completed, loading, error, acts };
 }
 
 /**
@@ -59,7 +109,7 @@ export async function createAct(payload: NewAct): Promise<KindnessAct> {
  */
 export async function updateAct(
   id: string,
-  payload: NewAct
+  payload: NewAct & { status?: "pending" | "approved" | "rejected" }
 ): Promise<{ message: string; updatedAct: KindnessAct }> {
   const result = await fetcher<{ message: string; updatedAct: KindnessAct }>(
     `http://localhost:4000/api/acts/${id}`,

@@ -22,7 +22,7 @@ export default function LoginPage() {
       setLocalError("Admins must log in via the admin login page.");
       return;
     }
-    router.push("/");
+    router.push("/profile");
   }
 
   return (
