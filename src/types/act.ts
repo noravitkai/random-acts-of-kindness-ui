@@ -13,3 +13,8 @@ export interface KindnessAct {
   createdAt: string;
   updatedAt: string;
 }
+
+export type NewAct = Pick<
+  KindnessAct,
+  "title" | "description" | "category" | "difficulty"
+>;
