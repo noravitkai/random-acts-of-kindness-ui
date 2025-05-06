@@ -1,7 +1,20 @@
-export default function Home() {
+"use client";
+
+import ActCard from "@/components/acts/ActCard";
+import { useActs } from "@/hooks/acts/useActs";
+
+export default function HomePage() {
+  const { acts, loading, error } = useActs();
+
+  if (loading) return <p className="p-8">Loading acts…</p>;
+  if (error) return <p className="p-8 text-red-600">Error: {error}</p>;
+  if (acts.length === 0) return <p className="p-8">No acts found.</p>;
+
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <h1 className="text-2xl font-semibold">Random Acts of Kindness</h1>
+    <main className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {acts.map((act) => (
+        <ActCard key={act._id} act={act} />
+      ))}
     </main>
   );
 }
