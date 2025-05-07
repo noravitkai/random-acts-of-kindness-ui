@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetcher } from "@/utils/fetcher";
-import type { KindnessAct, NewAct, CompletedAct } from "@/types/act";
+import type { KindnessAct, NewAct, CompletedAct, SavedAct } from "@/types/act";
 
 /**
  * Fetch approved kindness acts
@@ -40,6 +40,11 @@ export function useKindnessActs(userId?: string) {
 /**
  * Fetch the list of acts a user has completed
  * @param userId – ID of the specific user
+ * @returns an object containing:
+ *  - completed: array of CompletedAct items
+ * - loading: boolean indicating fetch in progress
+ * - error: string error message or null
+ * - refetch: function to manually refresh
  */
 export function useCompletedActs(userId: string) {
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
@@ -73,6 +78,49 @@ export function useCompletedActs(userId: string) {
   }, [userId, fetchCompleted]);
 
   return { completed, loading, error, refetch: fetchCompleted };
+}
+
+/**
+ * Fetch the list of acts a user has saved
+ * @param userId – ID of the user
+ * @returns an object containing:
+ *   - savedActs: array of SavedAct items
+ *   - loading: boolean indicating fetch in progress
+ *   - error: string error message or null
+ *   - refetch: function to manually refresh
+ */
+export function useSavedActs(userId: string) {
+  const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSavedActs = useCallback(() => {
+    if (!userId) {
+      setLoading(false);
+      setError("User ID is required to fetch saved acts.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    fetcher<SavedAct[]>(`http://localhost:4000/api/saved/${userId}`)
+      .then((data) => {
+        if (data && data.length > 0) {
+          setSavedActs(data);
+        } else {
+          setError("No saved acts found.");
+        }
+      })
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  useEffect(() => {
+    fetchSavedActs();
+  }, [userId, fetchSavedActs]);
+
+  return { savedActs, loading, error, refetch: fetchSavedActs };
 }
 
 /**

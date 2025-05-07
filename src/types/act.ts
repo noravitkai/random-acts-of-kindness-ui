@@ -24,3 +24,10 @@ export type CompletedAct = {
   act: Pick<KindnessAct, "_id" | "title">;
   completedAt: string;
 };
+
+export type SavedAct = {
+  _id: string;
+  user: string;
+  act: Pick<KindnessAct, "_id" | "title" | "description">;
+  savedAt: string;
+};

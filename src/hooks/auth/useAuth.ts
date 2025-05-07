@@ -45,7 +45,7 @@ export function useAuth() {
           role: payload.role,
         });
       } catch {
-        // invalid token
+        // Invalid token
         localStorage.removeItem("lsToken");
       }
     }

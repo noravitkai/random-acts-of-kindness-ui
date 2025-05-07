@@ -8,29 +8,100 @@ import {
   FaceSmileIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
-import { useKindnessActs, useCompletedActs } from "@/hooks/acts/useActs";
+import { CheckIcon } from "@heroicons/react/24/outline";
+import {
+  useKindnessActs,
+  useCompletedActs,
+  useSavedActs,
+} from "@/hooks/acts/useActs";
 import { useAuth } from "@/hooks/auth/useAuth";
-import type { KindnessAct } from "@/types/act";
+import type { KindnessAct, SavedAct, CompletedAct } from "@/types/act";
 import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
 
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
   const { acts, loading, error, refetch } = useKindnessActs(user?.id || "");
-  const { completed } = useCompletedActs(user?.id || "");
+
+  const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
+  const [completed, setCompleted] = useState<CompletedAct[]>([]);
+
+  const { savedActs: savedActsData, refetch: refetchSavedActs } = useSavedActs(
+    user?.id || ""
+  );
+  const { completed: completedData } = useCompletedActs(user?.id || "");
+
+  React.useEffect(() => {
+    setSavedActs(savedActsData || []);
+  }, [savedActsData]);
+
+  React.useEffect(() => {
+    setCompleted(completedData || []);
+  }, [completedData]);
+
+  const handleMarkAsCompleted = async (savedAct: SavedAct) => {
+    try {
+      const res = await fetch(
+        `http://localhost:4000/api/saved/${savedAct._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "auth-token": localStorage.getItem("lsToken") || "",
+          },
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to mark act as completed");
+        return;
+      }
+
+      const newSavedActs = savedActs.filter((act) => act._id !== savedAct._id);
+
+      const newCompletedAct: CompletedAct = {
+        _id: savedAct._id,
+        act: { _id: savedAct.act._id, title: savedAct.act.title },
+        completedAt: new Date().toISOString(),
+      };
+
+      const newCompletedList = [newCompletedAct, ...completed];
+
+      refetchSavedActs();
+      refetch();
+
+      setSavedActs(newSavedActs);
+      setCompleted(newCompletedList);
+    } catch (error) {
+      console.error("Error marking act as completed:", error);
+    }
+  };
 
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedAct, setSelectedAct] = useState<KindnessAct | null>(null);
 
-  // Pagination state for card of completed acts
   const [page, setPage] = useState(0);
   const itemsPerPage = 3;
-  const paginatedCompleted = completed.slice(
-    page * itemsPerPage,
-    page * itemsPerPage + itemsPerPage
-  );
+  const paginatedCompleted = [...completed]
+    .sort(
+      (a, b) =>
+        new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+    )
+    .slice(page * itemsPerPage, page * itemsPerPage + itemsPerPage);
+
+  // Pagination state for saved acts
+  const [savedPage, setSavedPage] = useState(0);
+  const savedItemsPerPage = 3;
+  const paginatedSavedActs = [...savedActs]
+    .sort(
+      (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+    )
+    .slice(
+      savedPage * savedItemsPerPage,
+      savedPage * savedItemsPerPage + savedItemsPerPage
+    );
 
   return (
     <section className="p-6 sm:p-10 min-h-screen">
@@ -60,58 +131,58 @@ const Page: React.FC = () => {
 
           {/* Completed Acts Card */}
           <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-            <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 h-full">
-              <h2 className="text-lg font-bold mb-4">
-                Completed Acts of Kindness
-              </h2>
-              {completed.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  No kindness acts completed yet. Start with one small act
-                  today!
-                </p>
-              ) : (
-                <>
+            <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div>
+                <h2 className="text-lg font-bold mb-2">
+                  Completed Acts of Kindness
+                </h2>
+                {completed.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    No kindness acts completed yet. Start with one small act
+                    today!
+                  </p>
+                ) : (
                   <ul className="space-y-2">
-                    {paginatedCompleted.map((item) => (
+                    {paginatedCompleted.map((item: CompletedAct) => (
                       <li
                         key={item._id}
                         className="flex items-start gap-2 text-sm"
                       >
                         <CheckCircleIcon className="w-5 h-5 mt-0.5 text-primary" />
                         <div className="flex flex-col">
-                          <span>{item.act.title || "Untitled"}</span>
+                          <span>{item.act?.title || "Untitled"}</span>
                           <span className="text-xs text-gray-500">
                             Completed on{" "}
                             {new Date(item.completedAt).toLocaleDateString()}
                           </span>
                         </div>
                       </li>
-                    ))}{" "}
+                    ))}
                   </ul>
-                  <div className="flex justify-end gap-4 mt-4">
-                    <button
-                      onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                      disabled={page === 0}
-                      className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() =>
-                        setPage((prev) =>
-                          (prev + 1) * itemsPerPage >= completed.length
-                            ? prev
-                            : prev + 1
-                        )
-                      }
-                      disabled={(page + 1) * itemsPerPage >= completed.length}
-                      className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </>
-              )}
+                )}
+              </div>
+              <div className="flex justify-end gap-4 mt-2">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                  disabled={page === 0}
+                  className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() =>
+                    setPage((prev) =>
+                      (prev + 1) * itemsPerPage >= completed.length
+                        ? prev
+                        : prev + 1
+                    )
+                  }
+                  disabled={(page + 1) * itemsPerPage >= completed.length}
+                  className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -119,11 +190,65 @@ const Page: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           {/* Saved Acts Card */}
           <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-            <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full">
-              <h2 className="text-lg font-bold mb-2 text-foreground">
-                Saved Acts of Kindness
-              </h2>
-              <p className="text-sm italic text-gray-400">Coming soon…</p>
+            <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div>
+                <h2 className="text-lg font-bold mb-2">
+                  Saved Acts of Kindness
+                </h2>
+                {savedActs.length === 0 ? (
+                  <p className="text-sm italic text-gray-500">
+                    No saved acts yet. Add some from the homepage.
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {paginatedSavedActs.map((savedAct: SavedAct) => (
+                      <li
+                        key={savedAct._id}
+                        className="flex items-start gap-2 text-sm"
+                      >
+                        <button
+                          onClick={() => handleMarkAsCompleted(savedAct)}
+                          className="flex items-center justify-center w-4 h-4 mt-0.5 border-2 border-primary rounded-full cursor-pointer transition duration-300 ease-in-out hover:bg-primary group"
+                          aria-label="Mark as completed"
+                        >
+                          <CheckIcon className="w-2.5 h-2.5 text-transparent group-hover:text-background transition-all duration-300 ease-in-out stroke-[3]" />
+                        </button>
+                        <div className="flex flex-col">
+                          <span>{savedAct.act.title || "Untitled"}</span>
+                          <span className="text-xs text-gray-500">
+                            Saved on{" "}
+                            {new Date(savedAct.savedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="flex justify-end gap-4 mt-2">
+                <button
+                  onClick={() => setSavedPage((prev) => Math.max(prev - 1, 0))}
+                  disabled={savedPage === 0}
+                  className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() =>
+                    setSavedPage((prev) =>
+                      (prev + 1) * savedItemsPerPage >= savedActs.length
+                        ? prev
+                        : prev + 1
+                    )
+                  }
+                  disabled={
+                    (savedPage + 1) * savedItemsPerPage >= savedActs.length
+                  }
+                  className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </div>
 
@@ -131,10 +256,10 @@ const Page: React.FC = () => {
           <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
             <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
               <div>
-                <h2 className="text-lg font-bold mb-2 text-foreground">
+                <h2 className="text-lg font-bold mb-2">
                   Share a Kindness Idea
                 </h2>
-                <p className="text-sm text-gray-600 mb-6">
+                <p className="text-sm text-gray-600">
                   Have a small or meaningful act of kindness in mind? You can
                   suggest it here so that you and others can complete it.
                   Let&#39;s build a kinder world together, one suggestion at a
@@ -142,7 +267,7 @@ const Page: React.FC = () => {
                   <FaceSmileIcon className="inline-block w-4 h-4 text-secondary align-middle ml-1" />
                 </p>
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end mt-2">
                 <div className="relative group inline-block">
                   <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
                   <button
@@ -161,8 +286,8 @@ const Page: React.FC = () => {
         {/* Suggested Acts Table */}
         <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
           <div className="overflow-x-auto bg-background border-2 border-black rounded-lg shadow relative z-10">
-            <table className="min-w-full text-sm text-foreground">
-              <thead className="bg-primary text-foreground text-left uppercase text-xs">
+            <table className="min-w-full text-sm">
+              <thead className="bg-primary text-left uppercase text-xs">
                 <tr>
                   <th className="px-6 py-4 text-background font-bold">
                     Suggestions
