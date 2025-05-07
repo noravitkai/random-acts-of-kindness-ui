@@ -3,24 +3,34 @@ import { fetcher } from "@/utils/fetcher";
 import type { KindnessAct, NewAct, CompletedAct, SavedAct } from "@/types/act";
 
 /**
- * Fetch approved kindness acts
+ * Fetch user-specific kindness acts
  * @returns an object containing:
- *   - acts: array of approved KindnessAct items
+ *   - acts: array of KindnessAct items for the user
  *   - loading: boolean indicating fetch in progress
  *   - error: string error message or null
  */
-export function useKindnessActs(userId?: string) {
+export function useSuggestedActs(userId?: string) {
   const [acts, setActs] = useState<KindnessAct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchActs = useCallback(() => {
     setLoading(true);
-    const url = userId
-      ? `http://localhost:4000/api/acts?createdBy=${userId}`
-      : "http://localhost:4000/api/acts";
+    const url = "http://localhost:4000/api/acts/user";
 
-    fetcher<KindnessAct[]>(url)
+    fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("lsToken") || "",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch user acts.");
+        }
+        return res.json();
+      })
       .then((data) => {
         setActs(data || []);
       })
@@ -35,6 +45,38 @@ export function useKindnessActs(userId?: string) {
   }, [fetchActs]);
 
   return { acts, loading, error, refetch: fetchActs };
+}
+
+/**
+ * Fetch all approved acts (for the home page)
+ * @returns an object containing:
+ *   - acts: array of approved KindnessAct items with status "approved"
+ *   - loading: boolean indicating fetch in progress
+ *   - error: string error message or null
+ *   - refetch: function to manually refresh
+ */
+export function useKindnessActs() {
+  const [acts, setActs] = useState<KindnessAct[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchApprovedActs = useCallback(() => {
+    setLoading(true);
+    fetcher<KindnessAct[]>("http://localhost:4000/api/acts")
+      .then((data) => {
+        setActs(data || []);
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchApprovedActs();
+  }, [fetchApprovedActs]);
+
+  return { acts, loading, error, refetch: fetchApprovedActs };
 }
 
 /**
