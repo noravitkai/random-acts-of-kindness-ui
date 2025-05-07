@@ -9,7 +9,7 @@ import {
 } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { createAct, updateAct } from "@/hooks/acts/useActs";
-import type { KindnessAct, NewAct } from "@/types/kindnessAct";
+import type { KindnessAct, NewAct } from "@/types/act";
 
 interface ActFormProps {
   open: boolean;

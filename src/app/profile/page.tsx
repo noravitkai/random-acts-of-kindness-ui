@@ -10,13 +10,13 @@ import {
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { useKindnessActs, useCompletedActs } from "@/hooks/acts/useActs";
 import { useAuth } from "@/hooks/auth/useAuth";
-import type { KindnessAct } from "@/types/kindnessAct";
+import type { KindnessAct } from "@/types/act";
 import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
 
 const Page: React.FC = () => {
-  const { acts, loading, error, refetch } = useKindnessActs();
   const { logout, user } = useAuth();
+  const { acts, loading, error, refetch } = useKindnessActs(user?.id || "");
   const { completed } = useCompletedActs(user?.id || "");
 
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -67,7 +67,7 @@ const Page: React.FC = () => {
               {completed.length === 0 ? (
                 <p className="text-sm text-gray-500">
                   No kindness acts completed yet. Start with one small act
-                  today.
+                  today!
                 </p>
               ) : (
                 <>
@@ -79,14 +79,14 @@ const Page: React.FC = () => {
                       >
                         <CheckCircleIcon className="w-5 h-5 mt-0.5 text-primary" />
                         <div className="flex flex-col">
-                          <span>{item.act?.title || "Untitled"}</span>
+                          <span>{item.act.title || "Untitled"}</span>
                           <span className="text-xs text-gray-500">
                             Completed on{" "}
                             {new Date(item.completedAt).toLocaleDateString()}
                           </span>
                         </div>
                       </li>
-                    ))}
+                    ))}{" "}
                   </ul>
                   <div className="flex justify-end gap-4 mt-4">
                     <button
@@ -189,65 +189,71 @@ const Page: React.FC = () => {
                       {error}
                     </td>
                   </tr>
-                ) : acts.length === 0 ? (
+                ) : acts.filter(
+                    (act) => act.createdBy && act.createdBy._id === user?.id
+                  ).length === 0 ? (
                   <tr>
-                    <td className="px-6 py-4" colSpan={4}>
-                      No kindness acts submitted yet.
+                    <td className="px-6 py-4 text-gray-500" colSpan={4}>
+                      No suggestions yet.
                     </td>
                   </tr>
                 ) : (
-                  acts.map((act) => (
-                    <tr key={act._id} className="border-t border-gray-300">
-                      <td className="px-6 py-4">{act.title}</td>
-                      <td className="px-6 py-4">{act.status}</td>
-                      <td className="px-6 py-4">
-                        {new Date(act.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 space-x-2">
-                        {act.status === "approved" ? (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedAct(act);
-                                setOpenEditModal(true);
-                              }}
-                              className="transition duration-300 hover:text-secondary cursor-pointer"
-                              aria-label="Edit"
-                            >
-                              <PencilSquareIcon className="w-5 h-5" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedAct(act);
-                                setOpenDeleteModal(true);
-                              }}
-                              className="transition duration-300 hover:text-secondary cursor-pointer"
-                              aria-label="Delete"
-                            >
-                              <TrashIcon className="w-5 h-5" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              disabled
-                              className="opacity-40 cursor-not-allowed"
-                              aria-label="Edit disabled"
-                            >
-                              <PencilSquareIcon className="w-5 h-5" />
-                            </button>
-                            <button
-                              disabled
-                              className="opacity-40 cursor-not-allowed"
-                              aria-label="Delete disabled"
-                            >
-                              <TrashIcon className="w-5 h-5" />
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+                  acts
+                    .filter(
+                      (act) => act.createdBy && act.createdBy._id === user?.id
+                    )
+                    .map((act) => (
+                      <tr key={act._id} className="border-t border-gray-300">
+                        <td className="px-6 py-4">{act.title}</td>
+                        <td className="px-6 py-4">{act.status}</td>
+                        <td className="px-6 py-4">
+                          {new Date(act.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 space-x-2">
+                          {act.status === "approved" ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setSelectedAct(act);
+                                  setOpenEditModal(true);
+                                }}
+                                className="transition duration-300 hover:text-secondary cursor-pointer"
+                                aria-label="Edit"
+                              >
+                                <PencilSquareIcon className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedAct(act);
+                                  setOpenDeleteModal(true);
+                                }}
+                                className="transition duration-300 hover:text-secondary cursor-pointer"
+                                aria-label="Delete"
+                              >
+                                <TrashIcon className="w-5 h-5" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                disabled
+                                className="opacity-40 cursor-not-allowed"
+                                aria-label="Edit disabled"
+                              >
+                                <PencilSquareIcon className="w-5 h-5" />
+                              </button>
+                              <button
+                                disabled
+                                className="opacity-40 cursor-not-allowed"
+                                aria-label="Delete disabled"
+                              >
+                                <TrashIcon className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))
                 )}
               </tbody>
             </table>

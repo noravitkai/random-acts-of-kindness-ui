@@ -18,3 +18,9 @@ export type NewAct = Pick<
   KindnessAct,
   "title" | "description" | "category" | "difficulty"
 >;
+
+export type CompletedAct = {
+  _id: string;
+  act: Pick<KindnessAct, "_id" | "title">;
+  completedAt: string;
+};

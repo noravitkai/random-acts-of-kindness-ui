@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetcher } from "@/utils/fetcher";
-import type { KindnessAct, NewAct } from "@/types/kindnessAct";
-import type { CompletedAct } from "@/types/completedAct";
+import type { KindnessAct, NewAct, CompletedAct } from "@/types/act";
 
 /**
  * Fetch approved kindness acts
@@ -10,28 +9,30 @@ import type { CompletedAct } from "@/types/completedAct";
  *   - loading: boolean indicating fetch in progress
  *   - error: string error message or null
  */
-export function useKindnessActs() {
+export function useKindnessActs(userId?: string) {
   const [acts, setActs] = useState<KindnessAct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActs = () => {
+  const fetchActs = useCallback(() => {
     setLoading(true);
-    fetcher<KindnessAct[]>("http://localhost:4000/api/acts")
+    const url = userId
+      ? `http://localhost:4000/api/acts?createdBy=${userId}`
+      : "http://localhost:4000/api/acts";
+
+    fetcher<KindnessAct[]>(url)
       .then((data) => {
         setActs(data || []);
       })
       .catch((err: Error) => {
         setError(err.message);
       })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+      .finally(() => setLoading(false));
+  }, [userId]);
 
   useEffect(() => {
     fetchActs();
-  }, []);
+  }, [fetchActs]);
 
   return { acts, loading, error, refetch: fetchActs };
 }
@@ -45,25 +46,33 @@ export function useCompletedActs(userId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchCompleted = useCallback(() => {
     if (!userId) {
       setLoading(false);
+      setError("User ID is required to fetch completed acts.");
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     fetcher<CompletedAct[]>(`http://localhost:4000/api/completed/${userId}`)
       .then((data) => {
-        if (data) {
+        if (data && data.length > 0) {
           setCompleted(data);
         } else {
-          setError("No completed acts found");
+          setError("No completed acts found.");
         }
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   }, [userId]);
 
-  return { completed, loading, error };
+  useEffect(() => {
+    fetchCompleted();
+  }, [userId, fetchCompleted]);
+
+  return { completed, loading, error, refetch: fetchCompleted };
 }
 
 /**
