@@ -31,11 +31,14 @@ export default function HomePage() {
   const handleSaveAct = async (actId: string) => {
     try {
       const token = localStorage.getItem("lsToken");
-      if (!token || !user?.id) {
+
+      if (!token || !user?.id || user.role === "admin") {
         setNotification({
           type: "warning",
           message:
-            "Oops! You need to log in to save acts. If you’re new here, first sign up!",
+            user?.role === "admin"
+              ? "Admins cannot save acts."
+              : "Oops! You need to log in to save acts. If you’re new here, first sign up!",
         });
         setTimeout(() => setNotification(null), 5000);
         return;

@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import type { KindnessAct } from "@/types/act";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 interface ActCardProps {
   act: KindnessAct;
@@ -18,6 +19,8 @@ export default function ActCard({
   onSave,
   children,
 }: ActCardProps) {
+  const { user } = useAuth();
+
   return (
     <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
       <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 h-full flex flex-col">
@@ -39,17 +42,19 @@ export default function ActCard({
           {children && <div className="mt-4">{children}</div>}
 
           <div className="flex justify-start mt-4">
-            <button
-              onClick={() => onSave(act._id)}
-              aria-label={isSaved ? "Unsave Act" : "Save Act"}
-              className="transition-transform ease-in-out duration-300 cursor-pointer"
-            >
-              {isSaved ? (
-                <HeartSolid className="w-6 h-6 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
-              ) : (
-                <HeartOutline className="w-6 h-6 text-gray-400 transform transition-transform duration-300 ease-in-out hover:scale-110" />
-              )}
-            </button>
+            {user?.role !== "admin" && (
+              <button
+                onClick={() => onSave(act._id)}
+                aria-label={isSaved ? "Unsave Act" : "Save Act"}
+                className="transition-transform ease-in-out duration-300 cursor-pointer"
+              >
+                {isSaved ? (
+                  <HeartSolid className="w-6 h-6 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
+                ) : (
+                  <HeartOutline className="w-6 h-6 text-gray-400 transform transition-transform duration-300 ease-in-out hover:scale-110" />
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
