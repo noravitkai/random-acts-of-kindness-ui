@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   PencilSquareIcon,
   TrashIcon,
@@ -41,6 +41,13 @@ export default function ActTable({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  const [page, setPage] = useState(0);
+  const itemsPerPage = 20;
+  const paginatedActs = actsToRender.slice(
+    page * itemsPerPage,
+    page * itemsPerPage + itemsPerPage
+  );
+
   return (
     <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
       <div className="overflow-x-auto bg-background border-2 border-black rounded-lg shadow relative z-10">
@@ -63,7 +70,7 @@ export default function ActTable({
                 </td>
               </tr>
             ) : (
-              actsToRender.map((act) => {
+              paginatedActs.map((act) => {
                 const canEditOrDelete =
                   isAdminView || act.status === "approved";
                 const isPending = isAdminView && act.status === "pending";
@@ -131,6 +138,26 @@ export default function ActTable({
             )}
           </tbody>
         </table>
+        <div className="flex justify-center p-4 space-x-4">
+          <button
+            onClick={() => setPage((p) => Math.max(p - 1, 0))}
+            disabled={page === 0}
+            className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+          >
+            Previous
+          </button>
+          <button
+            onClick={() =>
+              setPage((p) =>
+                (p + 1) * itemsPerPage >= actsToRender.length ? p : p + 1
+              )
+            }
+            disabled={(page + 1) * itemsPerPage >= actsToRender.length}
+            className="text-sm font-medium text-gray-600 hover:text-secondary transition ease-in-out duration-300 disabled:opacity-30 cursor-pointer"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
