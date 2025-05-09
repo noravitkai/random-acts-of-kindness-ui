@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -26,11 +26,23 @@ export default function ActForm({
   submitLabel,
   initialData,
 }: ActFormProps) {
-  const [form, setForm] = useState<NewAct>({
+  const token = localStorage.getItem("lsToken") || "";
+  const decodedToken = token ? JSON.parse(atob(token.split(".")[1])) : null;
+  const isAdmin = decodedToken?.role === "admin";
+
+  const [form, setForm] = useState<NewAct>(() => ({
     title: initialData?.title || "",
     description: initialData?.description || "",
     difficulty: initialData?.difficulty || "easy",
-  });
+  }));
+
+  React.useEffect(() => {
+    setForm({
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      difficulty: initialData?.difficulty || "easy",
+    });
+  }, [open, initialData]);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -48,12 +60,15 @@ export default function ActForm({
     setSubmitting(true);
     try {
       if (initialData) {
-        await updateAct(initialData._id, {
-          ...form,
-          status: "pending",
-        } as NewAct & { status: "pending" });
+        const updatedAct = isAdmin
+          ? { ...form, status: "approved" }
+          : { ...form, status: "pending" };
+        await updateAct(initialData._id, updatedAct as NewAct);
       } else {
-        await createAct(form);
+        const newAct = isAdmin
+          ? { ...form, status: "approved" }
+          : { ...form, status: "pending" };
+        await createAct(newAct);
       }
       onSuccess?.();
       onClose();

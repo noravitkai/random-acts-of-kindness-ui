@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  PencilSquareIcon,
-  TrashIcon,
-  PlusCircleIcon,
-  FaceSmileIcon,
-} from "@heroicons/react/24/outline";
+import { PlusCircleIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import {
-  useKindnessActs,
+  useUserActs,
   useCompletedActs,
   useSavedActs,
 } from "@/hooks/acts/useActs";
@@ -18,10 +13,11 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import type { KindnessAct, SavedAct, CompletedAct } from "@/types/act";
 import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
+import ActTable from "@/components/acts/ActTable";
 
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
-  const { acts, loading, error, refetch } = useKindnessActs(user?.id || "");
+  const { acts, refetch } = useUserActs();
 
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
@@ -195,8 +191,9 @@ const Page: React.FC = () => {
                   Saved Acts of Kindness
                 </h2>
                 {savedActs.length === 0 ? (
-                  <p className="text-sm italic text-gray-500">
-                    No saved acts yet. Add some from the homepage.
+                  <p className="text-sm text-gray-500">
+                    No saved acts here yet – add some acts from the collection
+                    and let the good vibes roll!
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -283,106 +280,18 @@ const Page: React.FC = () => {
         </div>
 
         {/* Suggested Acts Table */}
-        <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-          <div className="overflow-x-auto bg-background border-2 border-black rounded-lg shadow relative z-10">
-            <table className="min-w-full text-sm">
-              <thead className="bg-primary text-left uppercase text-xs">
-                <tr>
-                  <th className="px-6 py-4 text-background font-bold">
-                    Suggestions
-                  </th>
-                  <th className="px-6 py-4 text-background font-bold">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-background font-bold">Added</th>
-                  <th className="px-6 py-4 text-background font-bold">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td className="px-6 py-4" colSpan={4}>
-                      Loading...
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td className="px-6 py-4 text-red-500" colSpan={4}>
-                      {error}
-                    </td>
-                  </tr>
-                ) : acts.filter(
-                    (act) => act.createdBy && act.createdBy._id === user?.id
-                  ).length === 0 ? (
-                  <tr>
-                    <td className="px-6 py-4 text-gray-500" colSpan={4}>
-                      No suggestions yet.
-                    </td>
-                  </tr>
-                ) : (
-                  acts
-                    .filter(
-                      (act) => act.createdBy && act.createdBy._id === user?.id
-                    )
-                    .map((act) => (
-                      <tr key={act._id} className="border-t border-gray-300">
-                        <td className="px-6 py-4">{act.title}</td>
-                        <td className="px-6 py-4">{act.status}</td>
-                        <td className="px-6 py-4">
-                          {new Date(act.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 space-x-2">
-                          {act.status === "approved" ? (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setSelectedAct(act);
-                                  setOpenEditModal(true);
-                                }}
-                                className="transition duration-300 hover:text-secondary cursor-pointer"
-                                aria-label="Edit"
-                              >
-                                <PencilSquareIcon className="w-5 h-5" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedAct(act);
-                                  setOpenDeleteModal(true);
-                                }}
-                                className="transition duration-300 hover:text-secondary cursor-pointer"
-                                aria-label="Delete"
-                              >
-                                <TrashIcon className="w-5 h-5" />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                disabled
-                                className="opacity-40 cursor-not-allowed"
-                                aria-label="Edit disabled"
-                              >
-                                <PencilSquareIcon className="w-5 h-5" />
-                              </button>
-                              <button
-                                disabled
-                                className="opacity-40 cursor-not-allowed"
-                                aria-label="Delete disabled"
-                              >
-                                <TrashIcon className="w-5 h-5" />
-                              </button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <ActTable
+          acts={acts}
+          currentUserId={user?.id}
+          onEdit={(act) => {
+            setSelectedAct(act);
+            setOpenEditModal(true);
+          }}
+          onDelete={(act) => {
+            setSelectedAct(act);
+            setOpenDeleteModal(true);
+          }}
+        />
       </div>
 
       <div className="mt-6 max-w-6xl mx-auto flex justify-end">
@@ -399,7 +308,10 @@ const Page: React.FC = () => {
 
       <ActForm
         open={openAddModal}
-        onClose={() => setOpenAddModal(false)}
+        onClose={() => {
+          setOpenAddModal(false);
+          setSelectedAct(null);
+        }}
         onSuccess={refetch}
         submitLabel="Submit"
       />
@@ -408,14 +320,20 @@ const Page: React.FC = () => {
         <>
           <ActForm
             open={openEditModal}
-            onClose={() => setOpenEditModal(false)}
+            onClose={() => {
+              setOpenEditModal(false);
+              setSelectedAct(null);
+            }}
             onSuccess={refetch}
             initialData={selectedAct}
             submitLabel="Save"
           />
           <ActDelete
             open={openDeleteModal}
-            onClose={() => setOpenDeleteModal(false)}
+            onClose={() => {
+              setOpenDeleteModal(false);
+              setSelectedAct(null);
+            }}
             actId={selectedAct._id}
             onSuccess={refetch}
           />
