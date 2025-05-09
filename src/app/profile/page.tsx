@@ -210,7 +210,7 @@ const Page: React.FC = () => {
                           <CheckIcon className="w-2.5 h-2.5 text-transparent group-hover:text-background transition-all duration-300 ease-in-out stroke-[3]" />
                         </button>
                         <div className="flex flex-col">
-                          <span>{savedAct.act.title || "Untitled"}</span>
+                          <span>{savedAct.act?.title || "Untitled"}</span>
                           <span className="text-xs text-gray-500">
                             Saved on{" "}
                             {new Date(savedAct.savedAt).toLocaleDateString()}

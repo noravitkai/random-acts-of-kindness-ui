@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import ActStatus from "@/components/acts/ActStatus";
 import { useAuth } from "@/hooks/auth/useAuth";
 import ActTable from "@/components/acts/ActTable";
 import { useAllActs } from "@/hooks/acts/useActs";
@@ -16,6 +17,13 @@ export default function Dashboard() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedAct, setSelectedAct] = useState<KindnessAct | null>(null);
+  const [openStatusModal, setOpenStatusModal] = useState(false);
+  const [statusModalAct, setStatusModalAct] = useState<KindnessAct | null>(
+    null
+  );
+  const [statusAction, setStatusAction] = useState<"approved" | "rejected">(
+    "approved"
+  );
 
   return (
     <main className="p-6 sm:p-10 min-h-screen">
@@ -56,6 +64,16 @@ export default function Dashboard() {
               setSelectedAct(act);
               setOpenDeleteModal(true);
             }}
+            onApprove={(act) => {
+              setStatusModalAct(act);
+              setStatusAction("approved");
+              setOpenStatusModal(true);
+            }}
+            onReject={(act) => {
+              setStatusModalAct(act);
+              setStatusAction("rejected");
+              setOpenStatusModal(true);
+            }}
           />
           <ActForm
             open={openAddModal}
@@ -85,6 +103,18 @@ export default function Dashboard() {
                 onSuccess={refetch}
               />
             </>
+          )}
+          {statusModalAct && (
+            <ActStatus
+              open={openStatusModal}
+              onClose={() => setOpenStatusModal(false)}
+              actId={statusModalAct._id}
+              status={statusAction}
+              onSuccess={() => {
+                refetch();
+                setOpenStatusModal(false);
+              }}
+            />
           )}
         </div>
       </div>

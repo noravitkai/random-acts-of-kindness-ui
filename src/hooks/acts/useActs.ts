@@ -259,7 +259,7 @@ export async function createAct(payload: NewAct): Promise<KindnessAct> {
  */
 export async function updateAct(
   id: string,
-  payload: NewAct & { status?: "pending" | "approved" | "rejected" }
+  payload: Partial<NewAct> & { status?: "pending" | "approved" | "rejected" }
 ): Promise<{ message: string; updatedAct: KindnessAct }> {
   const token = localStorage.getItem("lsToken") || "";
   const decodedToken = JSON.parse(atob(token.split(".")[1]));
