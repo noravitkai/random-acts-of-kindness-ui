@@ -2,16 +2,7 @@
 
 import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-
-/**
- * Decode JWT payload
- */
-function decodeJwt<T>(token: string): T {
-  const [, payloadBase64] = token.split(".");
-  const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
-  const json = atob(base64);
-  return JSON.parse(json) as T;
-}
+import { jwtDecode } from "jwt-decode";
 
 type JWTPayload = { role: string };
 
@@ -31,7 +22,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     let payload: JWTPayload;
     try {
-      payload = decodeJwt<JWTPayload>(token);
+      payload = jwtDecode<JWTPayload>(token);
     } catch {
       router.replace("/admin/login");
       return;
