@@ -31,11 +31,11 @@ const Page: React.FC = () => {
   const { completed: completedData } = useCompletedActs(user?.id || "");
 
   React.useEffect(() => {
-    setSavedActs(savedActsData || []);
+    if (savedActsData !== undefined) setSavedActs(savedActsData);
   }, [savedActsData]);
 
   React.useEffect(() => {
-    setCompleted(completedData || []);
+    if (completedData !== undefined) setCompleted(completedData);
   }, [completedData]);
 
   const handleMarkAsCompleted = async (savedAct: SavedAct) => {
@@ -58,21 +58,20 @@ const Page: React.FC = () => {
         return;
       }
 
-      const newSavedActs = savedActs.filter((act) => act._id !== savedAct._id);
-
+      const updatedSavedActs = savedActs.filter(
+        (act) => act._id !== savedAct._id
+      );
       const newCompletedAct: CompletedAct = {
         _id: savedAct._id,
         act: { _id: savedAct.act._id, title: savedAct.act.title },
         completedAt: new Date().toISOString(),
       };
 
-      const newCompletedList = [newCompletedAct, ...completed];
+      await refetchSavedActs();
+      await refetch();
 
-      refetchSavedActs();
-      refetch();
-
-      setSavedActs(newSavedActs);
-      setCompleted(newCompletedList);
+      setSavedActs(updatedSavedActs);
+      setCompleted((prevCompleted) => [newCompletedAct, ...prevCompleted]);
     } catch (error) {
       console.error("Error marking act as completed:", error);
     }
@@ -398,32 +397,29 @@ const Page: React.FC = () => {
         </div>
       </div>
 
-      {openAddModal && (
-        <ActForm
-          open={openAddModal}
-          onClose={() => setOpenAddModal(false)}
-          onSuccess={refetch}
-          submitLabel="Submit"
-        />
-      )}
+      <ActForm
+        open={openAddModal}
+        onClose={() => setOpenAddModal(false)}
+        onSuccess={refetch}
+        submitLabel="Submit"
+      />
 
-      {openEditModal && selectedAct && (
-        <ActForm
-          open={openEditModal}
-          onClose={() => setOpenEditModal(false)}
-          onSuccess={refetch}
-          initialData={selectedAct}
-          submitLabel="Save"
-        />
-      )}
-
-      {openDeleteModal && selectedAct && (
-        <ActDelete
-          open={openDeleteModal}
-          onClose={() => setOpenDeleteModal(false)}
-          actId={selectedAct._id}
-          onSuccess={refetch}
-        />
+      {selectedAct && (
+        <>
+          <ActForm
+            open={openEditModal}
+            onClose={() => setOpenEditModal(false)}
+            onSuccess={refetch}
+            initialData={selectedAct}
+            submitLabel="Save"
+          />
+          <ActDelete
+            open={openDeleteModal}
+            onClose={() => setOpenDeleteModal(false)}
+            actId={selectedAct._id}
+            onSuccess={refetch}
+          />
+        </>
       )}
     </section>
   );

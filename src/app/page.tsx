@@ -17,20 +17,11 @@ export default function HomePage() {
   const { user } = useAuth();
   const { savedActs, refetch: refetchSavedActs } = useSavedActs();
 
-  const [savedActIds, setSavedActIds] = useState<string[]>([]);
-
   useEffect(() => {
     if (user?.id) {
       refetchSavedActs();
     }
   }, [user?.id, refetchSavedActs]);
-
-  useEffect(() => {
-    if (savedActs.length > 0) {
-      const ids = savedActs.map((savedAct) => savedAct.act._id);
-      setSavedActIds(ids);
-    }
-  }, [savedActs]);
 
   const [notification, setNotification] = useState<{
     type: "saved" | "unsaved" | "warning" | "error";
@@ -76,17 +67,15 @@ export default function HomePage() {
         return;
       }
 
+      refetchSavedActs();
+
       if (isAlreadySaved) {
-        setSavedActIds((prev) => prev.filter((id) => id !== actId));
-        refetchSavedActs();
         setNotification({
           type: "unsaved",
           message:
             "Unsaved! Removed from your saved list. You can always come back to it.",
         });
       } else {
-        setSavedActIds((prev) => [...prev, actId]);
-        refetchSavedActs();
         setNotification({
           type: "saved",
           message: "Yay! Saved successfully. Keep spreading kindness!",
@@ -185,7 +174,7 @@ export default function HomePage() {
             key={act._id}
             act={act}
             onSave={handleSaveAct}
-            isSaved={savedActIds.includes(act._id)}
+            isSaved={savedActs.some((saved) => saved.act._id === act._id)}
           />
         ))}
       </main>

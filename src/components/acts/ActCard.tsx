@@ -1,29 +1,23 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { ReactNode } from "react";
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import type { KindnessAct } from "@/types/act";
 
 interface ActCardProps {
   act: KindnessAct;
-  isSaved?: boolean;
+  isSaved: boolean;
   onSave: (actId: string) => void;
   children?: ReactNode;
 }
 
 export default function ActCard({
   act,
-  isSaved = false,
+  isSaved,
   onSave,
   children,
 }: ActCardProps) {
-  const [saved, setSaved] = useState(isSaved);
-
-  useEffect(() => {
-    setSaved(isSaved);
-  }, [isSaved]);
-
   return (
     <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
       <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 h-full flex flex-col">
@@ -46,13 +40,11 @@ export default function ActCard({
 
           <div className="flex justify-start mt-4">
             <button
-              onClick={() => {
-                onSave(act._id);
-              }}
-              aria-label={saved ? "Unsave Act" : "Save Act"}
+              onClick={() => onSave(act._id)}
+              aria-label={isSaved ? "Unsave Act" : "Save Act"}
               className="transition-transform ease-in-out duration-300 cursor-pointer"
             >
-              {saved ? (
+              {isSaved ? (
                 <HeartSolid className="w-6 h-6 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
               ) : (
                 <HeartOutline className="w-6 h-6 text-gray-400 transform transition-transform duration-300 ease-in-out hover:scale-110" />
