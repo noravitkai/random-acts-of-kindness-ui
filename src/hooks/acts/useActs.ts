@@ -10,42 +10,86 @@ import type { KindnessAct, NewAct, CompletedAct, SavedAct } from "@/types/act";
  *   - error: string error message or null
  *  - refetch: function to manually refresh
  */
-export function useKindnessActs(userId?: string) {
+export function useKindnessActs() {
   const [acts, setActs] = useState<KindnessAct[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActs = useCallback(() => {
+  const fetchActs = useCallback(async () => {
     setLoading(true);
-    const url = userId
-      ? `http://localhost:4000/api/acts/user`
-      : "http://localhost:4000/api/acts";
-
-    const options = userId
-      ? {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "auth-token": localStorage.getItem("lsToken") || "",
-          },
-        }
-      : {};
-
-    fetcher<KindnessAct[]>(url, options)
-      .then((data) => {
-        setActs(data || []);
-      })
-      .catch((err: Error) => {
+    setError(null);
+    try {
+      const url = "http://localhost:4000/api/acts";
+      const options = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+      };
+      const data = await fetcher<KindnessAct[]>(url, options);
+      setActs(data || []);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
         setError(err.message);
-      })
-      .finally(() => setLoading(false));
-  }, [userId]);
+      } else {
+        setError(String(err));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchActs();
   }, [fetchActs]);
 
   return { acts, loading, error, refetch: fetchActs };
+}
+
+/**
+ * Fetch all kindness acts created by the authenticated user
+ * @returns an object containing:
+ *   - acts: array of KindnessAct items (any status)
+ *   - loading: boolean indicating fetch in progress
+ *   - error: string error message or null
+ *   - refetch: function to manually refresh
+ */
+export function useUserActs() {
+  const [acts, setActs] = useState<KindnessAct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchUserActs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const url = "http://localhost:4000/api/acts/user";
+      const options = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+      };
+      const data = await fetcher<KindnessAct[]>(url, options);
+      setActs(data || []);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserActs();
+  }, [fetchUserActs]);
+
+  return { acts, loading, error, refetch: fetchUserActs };
 }
 
 /**
@@ -176,14 +220,26 @@ export function useSavedActs() {
 
 /**
  * Create a new act
+ * Admins can create approved acts directly, users' acts are forced to pending
  * @param payload – NewAct containing title, description, category, and difficulty
  * @returns the created KindnessAct object from the server
  * @throws Error if the server returns no data
  */
 export async function createAct(payload: NewAct): Promise<KindnessAct> {
+  const token = localStorage.getItem("lsToken") || "";
+  const decodedToken = JSON.parse(atob(token.split(".")[1]));
+  const isAdmin = decodedToken.role === "admin";
+
+  // Force pending status for regular users
+  const actPayload = isAdmin ? payload : { ...payload, status: "pending" };
+
   const result = await fetcher<KindnessAct>("http://localhost:4000/api/acts", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(actPayload),
+    headers: {
+      "Content-Type": "application/json",
+      "auth-token": token,
+    },
   });
   if (!result) {
     throw new Error("Failed to create: no data returned.");
@@ -193,6 +249,7 @@ export async function createAct(payload: NewAct): Promise<KindnessAct> {
 
 /**
  * Update an existing act
+ * Admins can update status directly, users' acts are forced to pending
  * @param id – ID of the act to update
  * @param payload – NewAct payload with updated fields
  * @returns an object with:
@@ -202,13 +259,24 @@ export async function createAct(payload: NewAct): Promise<KindnessAct> {
  */
 export async function updateAct(
   id: string,
-  payload: NewAct & { status?: "pending" | "approved" | "rejected" }
+  payload: Partial<NewAct> & { status?: "pending" | "approved" | "rejected" }
 ): Promise<{ message: string; updatedAct: KindnessAct }> {
+  const token = localStorage.getItem("lsToken") || "";
+  const decodedToken = JSON.parse(atob(token.split(".")[1]));
+  const isAdmin = decodedToken.role === "admin";
+
+  // Force pending status for regular users
+  const actPayload = isAdmin ? payload : { ...payload, status: "pending" };
+
   const result = await fetcher<{ message: string; updatedAct: KindnessAct }>(
     `http://localhost:4000/api/acts/${id}`,
     {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(actPayload),
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": token,
+      },
     }
   );
   if (result == null) {
@@ -219,18 +287,55 @@ export async function updateAct(
 
 /**
  * Delete a kindness act
+ * Admins can delete any act, users can delete only their own acts
  * @param id – ID of the act to delete
  * @returns an object with:
  *   - message: confirmation from the server
  * @throws Error if the server response is null
  */
 export async function deleteAct(id: string): Promise<{ message: string }> {
+  const token = localStorage.getItem("lsToken") || "";
+
   const result = await fetcher<{ message: string }>(
     `http://localhost:4000/api/acts/${id}`,
-    { method: "DELETE" }
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": token,
+      },
+    }
   );
   if (result == null) {
     throw new Error("Failed to delete: no response from server.");
   }
   return result;
+}
+
+/**
+ * Fetch all kindness acts (admin)
+ * @returns an object containing:
+ *  - acts: array of all KindnessAct items
+ *  - refetch: function to manually refresh the list
+ */
+export function useAllActs() {
+  const [acts, setActs] = useState<KindnessAct[]>([]);
+
+  const fetchAllActs = useCallback(() => {
+    fetcher<KindnessAct[]>("http://localhost:4000/api/acts/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("lsToken") || "",
+      },
+    }).then((data) => {
+      setActs(data || []);
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchAllActs();
+  }, [fetchAllActs]);
+
+  return { acts, refetch: fetchAllActs };
 }
