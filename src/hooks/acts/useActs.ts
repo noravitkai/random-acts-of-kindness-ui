@@ -3,34 +3,35 @@ import { fetcher } from "@/utils/fetcher";
 import type { KindnessAct, NewAct, CompletedAct, SavedAct } from "@/types/act";
 
 /**
- * Fetch user-specific kindness acts
+ * Fetch approved kindness acts
  * @returns an object containing:
- *   - acts: array of KindnessAct items for the user
+ *   - acts: array of approved KindnessAct items
  *   - loading: boolean indicating fetch in progress
  *   - error: string error message or null
+ *  - refetch: function to manually refresh
  */
-export function useSuggestedActs(userId?: string) {
+export function useKindnessActs(userId?: string) {
   const [acts, setActs] = useState<KindnessAct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchActs = useCallback(() => {
     setLoading(true);
-    const url = "http://localhost:4000/api/acts/user";
+    const url = userId
+      ? `http://localhost:4000/api/acts/user`
+      : "http://localhost:4000/api/acts";
 
-    fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "auth-token": localStorage.getItem("lsToken") || "",
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch user acts.");
+    const options = userId
+      ? {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "auth-token": localStorage.getItem("lsToken") || "",
+          },
         }
-        return res.json();
-      })
+      : {};
+
+    fetcher<KindnessAct[]>(url, options)
       .then((data) => {
         setActs(data || []);
       })
@@ -45,38 +46,6 @@ export function useSuggestedActs(userId?: string) {
   }, [fetchActs]);
 
   return { acts, loading, error, refetch: fetchActs };
-}
-
-/**
- * Fetch all approved acts (for the home page)
- * @returns an object containing:
- *   - acts: array of approved KindnessAct items with status "approved"
- *   - loading: boolean indicating fetch in progress
- *   - error: string error message or null
- *   - refetch: function to manually refresh
- */
-export function useKindnessActs() {
-  const [acts, setActs] = useState<KindnessAct[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchApprovedActs = useCallback(() => {
-    setLoading(true);
-    fetcher<KindnessAct[]>("http://localhost:4000/api/acts")
-      .then((data) => {
-        setActs(data || []);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetchApprovedActs();
-  }, [fetchApprovedActs]);
-
-  return { acts, loading, error, refetch: fetchApprovedActs };
 }
 
 /**
@@ -101,15 +70,10 @@ export function useCompletedActs(userId: string) {
     }
 
     setLoading(true);
-    setError(null);
 
     fetcher<CompletedAct[]>(`http://localhost:4000/api/completed/${userId}`)
       .then((data) => {
-        if (data && data.length > 0) {
-          setCompleted(data);
-        } else {
-          setError("No completed acts found.");
-        }
+        setCompleted(data || []);
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
@@ -117,52 +81,97 @@ export function useCompletedActs(userId: string) {
 
   useEffect(() => {
     fetchCompleted();
-  }, [userId, fetchCompleted]);
+  }, [fetchCompleted]);
 
   return { completed, loading, error, refetch: fetchCompleted };
 }
 
 /**
  * Fetch the list of acts a user has saved
- * @param userId – ID of the user
  * @returns an object containing:
  *   - savedActs: array of SavedAct items
  *   - loading: boolean indicating fetch in progress
  *   - error: string error message or null
  *   - refetch: function to manually refresh
  */
-export function useSavedActs(userId: string) {
+export function useSavedActs() {
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSavedActs = useCallback(() => {
-    if (!userId) {
-      setLoading(false);
-      setError("User ID is required to fetch saved acts.");
-      return;
-    }
-
     setLoading(true);
-    setError(null);
 
-    fetcher<SavedAct[]>(`http://localhost:4000/api/saved/${userId}`)
+    fetcher<SavedAct[]>("http://localhost:4000/api/saved", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": localStorage.getItem("lsToken") || "",
+      },
+    })
       .then((data) => {
-        if (data && data.length > 0) {
-          setSavedActs(data);
-        } else {
-          setError("No saved acts found.");
-        }
+        setSavedActs(data || []);
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchSavedActs();
-  }, [userId, fetchSavedActs]);
+  }, [fetchSavedActs]);
 
-  return { savedActs, loading, error, refetch: fetchSavedActs };
+  /**
+   * Unsave act (without marking it as completed)
+   * @param savedId – ID of the saved act to unsave
+   * @returns message from the server
+   */
+  async function unsaveAct(savedId: string): Promise<{ message: string }> {
+    const result = await fetcher<{ message: string }>(
+      `http://localhost:4000/api/saved/${savedId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+      }
+    );
+    if (!result) {
+      throw new Error("Failed to unsave act: no response from server.");
+    }
+    return result;
+  }
+
+  /**
+   * Mark a saved act as completed
+   * @param savedId – ID of the saved act to mark as completed
+   * @returns message from the server
+   */
+  async function completeAct(savedId: string): Promise<{ message: string }> {
+    const result = await fetcher<{ message: string }>(
+      `http://localhost:4000/api/saved/${savedId}/complete`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+      }
+    );
+    if (!result) {
+      throw new Error("Failed to complete act: no response from server.");
+    }
+    return result;
+  }
+
+  return {
+    savedActs,
+    loading,
+    error,
+    refetch: fetchSavedActs,
+    unsaveAct,
+    completeAct,
+  };
 }
 
 /**

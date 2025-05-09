@@ -10,7 +10,7 @@ import {
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import {
-  useSuggestedActs,
+  useKindnessActs,
   useCompletedActs,
   useSavedActs,
 } from "@/hooks/acts/useActs";
@@ -21,14 +21,13 @@ import ActDelete from "@/components/acts/ActDelete";
 
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
-  const { acts, loading, error, refetch } = useSuggestedActs(user?.id || "");
+  const { acts, loading, error, refetch } = useKindnessActs(user?.id || "");
 
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
 
-  const { savedActs: savedActsData, refetch: refetchSavedActs } = useSavedActs(
-    user?.id || ""
-  );
+  const { savedActs: savedActsData, refetch: refetchSavedActs } =
+    useSavedActs();
   const { completed: completedData } = useCompletedActs(user?.id || "");
 
   React.useEffect(() => {
@@ -42,9 +41,9 @@ const Page: React.FC = () => {
   const handleMarkAsCompleted = async (savedAct: SavedAct) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/saved/${savedAct._id}`,
+        `http://localhost:4000/api/saved/${savedAct._id}/complete`,
         {
-          method: "DELETE",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "auth-token": localStorage.getItem("lsToken") || "",
@@ -54,6 +53,8 @@ const Page: React.FC = () => {
 
       if (!res.ok) {
         console.error("Failed to mark act as completed");
+        const errorData = await res.json();
+        console.error("Error details:", errorData);
         return;
       }
 
@@ -91,7 +92,6 @@ const Page: React.FC = () => {
     )
     .slice(page * itemsPerPage, page * itemsPerPage + itemsPerPage);
 
-  // Pagination state for saved acts
   const [savedPage, setSavedPage] = useState(0);
   const savedItemsPerPage = 3;
   const paginatedSavedActs = [...savedActs]

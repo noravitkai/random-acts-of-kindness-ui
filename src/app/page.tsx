@@ -1,43 +1,69 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import {
-  CheckCircleIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
+import { BookmarkIcon, BookmarkSlashIcon } from "@heroicons/react/24/solid";
 import ActCard from "@/components/acts/ActCard";
-import { useKindnessActs } from "@/hooks/acts/useActs";
+import { useKindnessActs, useSavedActs } from "@/hooks/acts/useActs";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { Transition } from "@headlessui/react";
 
 export default function HomePage() {
   const { acts, loading, error } = useKindnessActs();
+  const { user } = useAuth();
+  const { savedActs, refetch: refetchSavedActs } = useSavedActs();
+
+  const [savedActIds, setSavedActIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user?.id) {
+      refetchSavedActs();
+    }
+  }, [user?.id, refetchSavedActs]);
+
+  useEffect(() => {
+    if (savedActs.length > 0) {
+      const ids = savedActs.map((savedAct) => savedAct.act._id);
+      setSavedActIds(ids);
+    }
+  }, [savedActs]);
 
   const [notification, setNotification] = useState<{
-    type: "success" | "error" | "warning";
+    type: "saved" | "unsaved" | "warning" | "error";
     message: string;
   } | null>(null);
 
   const handleSaveAct = async (actId: string) => {
     try {
       const token = localStorage.getItem("lsToken");
-      if (!token) {
+      if (!token || !user?.id) {
         setNotification({
           type: "warning",
           message:
             "Oops! You need to log in to save acts. If you’re new here, first sign up!",
         });
+        setTimeout(() => setNotification(null), 5000);
         return;
       }
 
-      const res = await fetch("http://localhost:4000/api/saved", {
-        method: "POST",
+      const savedAct = savedActs.find((saved) => saved.act._id === actId);
+      const isAlreadySaved = !!savedAct;
+      const endpoint = isAlreadySaved
+        ? `http://localhost:4000/api/saved/${savedAct._id}`
+        : "http://localhost:4000/api/saved";
+      const method = isAlreadySaved ? "DELETE" : "POST";
+
+      const res = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
           "auth-token": token,
         },
-        body: JSON.stringify({ act: actId }),
+        body: isAlreadySaved ? null : JSON.stringify({ act: actId }),
       });
 
       if (!res.ok) {
@@ -46,19 +72,35 @@ export default function HomePage() {
           type: "error",
           message: `Uh-oh! Something just went wrong: ${error}`,
         });
+        setTimeout(() => setNotification(null), 5000);
         return;
       }
 
-      setNotification({
-        type: "success",
-        message: "Yay! Saved successfully. Keep spreading kindness!",
-      });
+      if (isAlreadySaved) {
+        setSavedActIds((prev) => prev.filter((id) => id !== actId));
+        refetchSavedActs();
+        setNotification({
+          type: "unsaved",
+          message:
+            "Unsaved! Removed from your saved list. You can always come back to it.",
+        });
+      } else {
+        setSavedActIds((prev) => [...prev, actId]);
+        refetchSavedActs();
+        setNotification({
+          type: "saved",
+          message: "Yay! Saved successfully. Keep spreading kindness!",
+        });
+      }
+
+      setTimeout(() => setNotification(null), 5000);
     } catch (error) {
       console.error(error);
       setNotification({
         type: "error",
         message: "Uh-oh! An unexpected error occurred. Try again, please.",
       });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
@@ -87,8 +129,11 @@ export default function HomePage() {
               <div className="p-4">
                 <div className="flex items-start">
                   <div className="shrink-0">
-                    {notification?.type === "success" && (
-                      <CheckCircleIcon className="w-6 h-6 text-primary" />
+                    {notification?.type === "saved" && (
+                      <BookmarkIcon className="w-6 h-6 text-primary" />
+                    )}
+                    {notification?.type === "unsaved" && (
+                      <BookmarkSlashIcon className="w-6 h-6 text-primary" />
                     )}
                     {notification?.type === "error" && (
                       <ExclamationCircleIcon className="w-6 h-6 text-primary" />
@@ -136,7 +181,12 @@ export default function HomePage() {
       </Transition>
       <main className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
         {acts.map((act) => (
-          <ActCard key={act._id} act={act} onSave={handleSaveAct} />
+          <ActCard
+            key={act._id}
+            act={act}
+            onSave={handleSaveAct}
+            isSaved={savedActIds.includes(act._id)}
+          />
         ))}
       </main>
     </>

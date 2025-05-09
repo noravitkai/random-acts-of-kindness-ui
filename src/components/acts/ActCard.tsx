@@ -48,7 +48,6 @@ export default function ActCard({
             <button
               onClick={() => {
                 onSave(act._id);
-                setSaved(!saved);
               }}
               aria-label={saved ? "Unsave Act" : "Save Act"}
               className="transition-transform ease-in-out duration-300 cursor-pointer"
