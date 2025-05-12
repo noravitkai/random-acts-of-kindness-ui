@@ -14,7 +14,7 @@ import type { KindnessAct, SavedAct, CompletedAct } from "@/types/act";
 import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
 import ActTable from "@/components/acts/ActTable";
-import Footer from "@/components/nav/Footer";
+import Footer from "@/components/layout/Footer";
 
 const Page: React.FC = () => {
   const { logout, user } = useAuth();

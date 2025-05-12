@@ -8,7 +8,7 @@ import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
 import { KindnessAct } from "@/types/act";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
-import Footer from "@/components/nav/Footer";
+import Footer from "@/components/layout/Footer";
 
 export default function Dashboard() {
   const { logout } = useAuth();
