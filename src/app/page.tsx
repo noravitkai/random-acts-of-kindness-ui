@@ -11,6 +11,7 @@ import ActCard from "@/components/acts/ActCard";
 import { useKindnessActs, useSavedActs } from "@/hooks/acts/useActs";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { Transition } from "@headlessui/react";
+import Footer from "@/components/nav/Footer";
 
 export default function HomePage() {
   const { acts, loading, error } = useKindnessActs();
@@ -171,29 +172,32 @@ export default function HomePage() {
           </div>
         </div>
       </Transition>
-      <main className="p-8">
-        <div className="border-b border-gray-200 pb-5 mb-8">
-          <h1 className="text-2xl font-bold">
-            Random Acts of Kindness <span className="text-primary">•</span> A
-            Journey to a Kinder World
-          </h1>
-          <p className="mt-2 max-w-4xl text-base text-gray-600">
-            Save simple kindness missions, sign up or log in to complete them,
-            and suggest your own – track your progress and inspire others along
-            the way.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-          {acts.map((act) => (
-            <ActCard
-              key={act._id}
-              act={act}
-              onSave={handleSaveAct}
-              isSaved={savedActs.some((saved) => saved.act._id === act._id)}
-            />
-          ))}
+      <main className="p-6 sm:p-10 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="border-b border-gray-200 pb-5 mb-6 sm:mb-10">
+            <h1 className="text-2xl font-bold">
+              Random Acts of Kindness <span className="text-primary">•</span> A
+              Journey to a Kinder World
+            </h1>
+            <p className="mt-2 max-w-4xl text-base text-gray-600">
+              Save simple kindness missions, sign up or log in to complete them,
+              and suggest your own – track your progress and inspire others
+              along the way.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+            {acts.map((act) => (
+              <ActCard
+                key={act._id}
+                act={act}
+                onSave={handleSaveAct}
+                isSaved={savedActs.some((saved) => saved.act._id === act._id)}
+              />
+            ))}
+          </div>
         </div>
       </main>
+      <Footer />
     </>
   );
 }
