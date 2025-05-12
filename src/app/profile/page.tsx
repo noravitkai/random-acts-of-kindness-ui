@@ -15,10 +15,13 @@ import ActForm from "@/components/acts/ActForm";
 import ActDelete from "@/components/acts/ActDelete";
 import ActTable from "@/components/acts/ActTable";
 import Footer from "@/components/layout/Footer";
+import { useRouter } from "next/navigation";
+import Header from "@/components/layout/Header";
 
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
   const { acts, refetch } = useUserActs();
+  const router = useRouter();
 
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
@@ -101,12 +104,20 @@ const Page: React.FC = () => {
 
   return (
     <>
-      <section className="p-6 sm:p-10 min-h-screen">
+      <section className="p-8 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
+          <Header
+            title={<>Hello, Kind Soul!</>}
+            description="Make kindness a daily habit! Keep track of your saved and completed kindness acts, celebrate, and share your ideas to keep kindness going."
+            buttons={[
+              { label: "Home", onClick: () => router.push("/") },
+              { label: "Logout", onClick: logout, primary: true },
+            ]}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             {/* Kindness Score Card */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 h-full">
+              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full">
                 <h2 className="text-lg font-bold mb-2">Total Kindness Score</h2>
                 <p className="text-4xl font-extrabold text-primary">
                   {completed.length}
@@ -128,7 +139,7 @@ const Page: React.FC = () => {
 
             {/* Completed Acts Card */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
                     Completed Acts of Kindness
@@ -187,7 +198,7 @@ const Page: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             {/* Saved Acts Card */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
                     Saved Acts of Kindness
@@ -254,7 +265,7 @@ const Page: React.FC = () => {
 
             {/* Share Idea Card */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
-              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
                     Share a Kindness Idea
@@ -296,18 +307,6 @@ const Page: React.FC = () => {
               setOpenDeleteModal(true);
             }}
           />
-        </div>
-
-        <div className="mt-6 max-w-7xl mx-auto flex justify-end">
-          <div className="relative group inline-block">
-            <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-            <button
-              onClick={logout}
-              className="relative z-10 flex items-start gap-x-2 rounded-md border-2 border-black bg-primary px-4 py-2 text-sm font-semibold text-background transition ease-in-out duration-300 hover:bg-secondary cursor-pointer"
-            >
-              Logout
-            </button>
-          </div>
         </div>
 
         <ActForm

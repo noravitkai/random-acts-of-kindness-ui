@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Fragment } from "react";
+import { useRouter } from "next/navigation";
 import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
@@ -12,11 +13,13 @@ import { useKindnessActs, useSavedActs } from "@/hooks/acts/useActs";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { Transition } from "@headlessui/react";
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 
 export default function HomePage() {
   const { acts, loading, error } = useKindnessActs();
   const { user, logout } = useAuth();
   const { savedActs, refetch: refetchSavedActs } = useSavedActs();
+  const router = useRouter();
 
   useEffect(() => {
     if (user?.id) {
@@ -175,64 +178,33 @@ export default function HomePage() {
       {/* <Navbar /> */}
       <main className="p-6 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <div className="border-b border-gray-200 pb-7 mb-6 sm:mb-10 flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">
+          <Header
+            title={
+              <>
                 Random Acts of Kindness <span className="text-primary">•</span>{" "}
                 A Journey to a Kinder World
-              </h1>
-              <p className="mt-2 max-w-2xl text-base text-gray-600">
-                Save simple kindness missions, sign up or log in to complete
-                them, and suggest your own – track your progress and inspire
-                others along the way.
-              </p>
-            </div>
-            <div className="flex gap-4 mt-4 lg:mt-0">
-              {user ? (
-                <>
-                  <div className="relative group inline-block">
-                    <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-                    <a
-                      href="/profile"
-                      className="relative z-10 flex items-center gap-x-2 rounded-md border-2 border-black bg-background text-gray-900 px-4 py-2 text-sm font-semibold transition ease-in-out duration-300 hover:bg-secondary hover:text-background cursor-pointer"
-                    >
-                      Profile
-                    </a>
-                  </div>
-                  <div className="relative group inline-block">
-                    <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-                    <button
-                      onClick={logout}
-                      className="relative z-10 flex items-center gap-x-2 rounded-md border-2 border-black bg-primary px-4 py-2 text-sm font-semibold text-background transition ease-in-out duration-300 hover:bg-secondary cursor-pointer"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="relative group inline-block">
-                    <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-                    <a
-                      href="/signup"
-                      className="relative z-10 flex items-center gap-x-2 rounded-md border-2 border-black bg-background text-gray-900 px-4 py-2 text-sm font-semibold transition ease-in-out duration-300 hover:bg-secondary hover:text-background cursor-pointer"
-                    >
-                      Signup
-                    </a>
-                  </div>
-                  <div className="relative group inline-block">
-                    <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
-                    <a
-                      href="/login"
-                      className="relative z-10 flex items-center gap-x-2 rounded-md border-2 border-black bg-primary px-4 py-2 text-sm font-semibold text-background transition ease-in-out duration-300 hover:bg-secondary cursor-pointer"
-                    >
-                      Login
-                    </a>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+              </>
+            }
+            description="Save simple kindness missions, sign up or log in to complete them, and suggest your own – track your progress and inspire others along the way."
+            buttons={
+              user
+                ? [
+                    {
+                      label: "Profile",
+                      onClick: () => router.push("/profile"),
+                    },
+                    { label: "Logout", onClick: logout, primary: true },
+                  ]
+                : [
+                    { label: "Signup", onClick: () => router.push("/signup") },
+                    {
+                      label: "Login",
+                      onClick: () => router.push("/login"),
+                      primary: true,
+                    },
+                  ]
+            }
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
             {acts.map((act) => (
               <ActCard
