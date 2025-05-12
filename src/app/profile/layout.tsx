@@ -1,32 +1,27 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "@/hooks/auth/useAuth";
 
 export default function ProfileLayout({ children }: { children: ReactNode }) {
+  const { user, initialized } = useAuth();
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("lsToken");
-    if (!token) {
+    if (!initialized) return;
+    if (user === null || user.role !== "user") {
       router.replace("/login");
-      return;
     }
-    let payload: { role: string };
-    try {
-      payload = jwtDecode<{ role: string }>(token);
-    } catch {
-      router.replace("/login");
-      return;
-    }
-    if (payload.role !== "user") {
-      router.replace("/login");
-      return;
-    }
-    setAuthorized(true);
-  }, [router]);
+  }, [initialized, user, router]);
 
-  return authorized ? <>{children}</> : null;
+  if (!initialized) {
+    return null;
+  }
+
+  if (!user || user.role !== "user") {
+    return null;
+  }
+
+  return <>{children}</>;
 }

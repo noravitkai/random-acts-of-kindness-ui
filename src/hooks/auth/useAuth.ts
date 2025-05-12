@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { fetcher } from "@/utils/fetcher";
 import type { User } from "@/types/user";
 import { jwtDecode } from "jwt-decode";
@@ -9,6 +9,7 @@ type JWTPayload = {
   username: string;
   email: string;
   role: "user" | "admin";
+  exp: number;
 };
 
 // Data sent to the server when user logs in
@@ -30,8 +31,38 @@ export type RegisterData = {
  */
 export function useAuth() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  const logoutTimer = useRef<number | null>(null);
+
+  const logout = useCallback(() => {
+    if (logoutTimer.current) {
+      clearTimeout(logoutTimer.current);
+    }
+    localStorage.removeItem("lsToken");
+    setUser(null);
+    const redirectPath = pathname.startsWith("/admin")
+      ? "/admin/login"
+      : "/login";
+    router.replace(redirectPath);
+  }, [router, pathname]);
+
+  const scheduleLogout = useCallback(
+    (exp: number) => {
+      const msUntilExpiry = exp * 1000 - Date.now();
+      if (msUntilExpiry <= 0) {
+        logout();
+      } else {
+        logoutTimer.current = window.setTimeout(() => {
+          logout();
+        }, msUntilExpiry);
+      }
+    },
+    [logout]
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("lsToken");
@@ -44,12 +75,52 @@ export function useAuth() {
           email: payload.email,
           role: payload.role,
         });
+        scheduleLogout(payload.exp);
       } catch {
-        // Invalid token
         localStorage.removeItem("lsToken");
       }
     }
-  }, []);
+    setInitialized(true);
+    return () => {
+      if (logoutTimer.current) {
+        clearTimeout(logoutTimer.current);
+      }
+    };
+  }, [scheduleLogout]);
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "lsToken") {
+        const newToken = e.newValue;
+        if (newToken) {
+          try {
+            const payload = jwtDecode<JWTPayload>(newToken);
+            setUser({
+              id: payload.userId,
+              username: payload.username,
+              email: payload.email,
+              role: payload.role,
+            });
+            scheduleLogout(payload.exp);
+          } catch {
+            localStorage.removeItem("lsToken");
+            setUser(null);
+          }
+        } else {
+          if (logoutTimer.current) clearTimeout(logoutTimer.current);
+          setUser(null);
+          const redirectPath = pathname.startsWith("/admin")
+            ? "/admin/login"
+            : "/login";
+          router.replace(redirectPath);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [scheduleLogout, router, pathname]);
 
   /**
    * Call login API with form data
@@ -70,6 +141,8 @@ export function useAuth() {
       if (!res) throw new Error("No response from server");
       localStorage.setItem("lsToken", res.token);
       setUser(res.user);
+      const payload = jwtDecode<JWTPayload>(res.token);
+      scheduleLogout(payload.exp);
       return res.user;
     } catch (err: unknown) {
       const message =
@@ -105,20 +178,12 @@ export function useAuth() {
     }
   }
 
-  /**
-   * Clear authentication state and redirect to the login page
-   */
-  function logout() {
-    localStorage.removeItem("lsToken");
-    setUser(null);
-    router.replace("/login");
-  }
-
   return {
     user,
     error,
     login,
     register,
     logout,
+    initialized,
   };
 }
