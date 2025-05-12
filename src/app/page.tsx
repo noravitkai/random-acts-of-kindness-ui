@@ -175,7 +175,6 @@ export default function HomePage() {
           </div>
         </div>
       </Transition>
-      {/* <Navbar /> */}
       <main className="p-6 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <Header
@@ -188,13 +187,15 @@ export default function HomePage() {
             description="Save simple kindness missions, sign up or log in to complete them, and suggest your own – track your progress and inspire others along the way."
             buttons={
               user
-                ? [
-                    {
-                      label: "Profile",
-                      onClick: () => router.push("/profile"),
-                    },
-                    { label: "Logout", onClick: logout, primary: true },
-                  ]
+                ? user.role === "user"
+                  ? [
+                      {
+                        label: "Profile",
+                        onClick: () => router.push("/profile"),
+                      },
+                      { label: "Logout", onClick: logout, primary: true },
+                    ]
+                  : []
                 : [
                     { label: "Signup", onClick: () => router.push("/signup") },
                     {
