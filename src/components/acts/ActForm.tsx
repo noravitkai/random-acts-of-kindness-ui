@@ -105,7 +105,7 @@ export default function ActForm({
             <DialogPanel className="relative w-full max-w-lg transform overflow-hidden rounded-lg bg-background px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:p-6">
               <div className="mb-4 flex items-center justify-between">
                 <DialogTitle
-                  as="h3"
+                  as="h2"
                   className="text-lg font-semibold text-gray-900"
                 >
                   {initialData

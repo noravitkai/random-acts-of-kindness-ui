@@ -47,7 +47,7 @@ export default function Dashboard() {
     <>
       {/* ===== Dashboard Layout ===== */}
       <main>
-        <section className="p-8 sm:p-10 min-h-screen">
+        <div className="p-8 sm:p-10 min-h-screen">
           <div className="max-w-7xl mx-auto">
             {/* ===== Page Header ===== */}
             <Header
@@ -137,7 +137,7 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-        </section>
+        </div>
       </main>
       <Footer />
     </>

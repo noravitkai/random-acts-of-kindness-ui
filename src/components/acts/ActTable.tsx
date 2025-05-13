@@ -149,7 +149,10 @@ export default function ActTable({
           </tbody>
         </table>
         {/* ===== Pagination Controls ===== */}
-        <div className="flex justify-center p-4 space-x-4">
+        <nav
+          aria-label="Pagination"
+          className="flex justify-center p-4 space-x-4"
+        >
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 0))}
             disabled={page === 0}
@@ -168,7 +171,7 @@ export default function ActTable({
           >
             Next
           </button>
-        </div>
+        </nav>
       </div>
     </div>
   );

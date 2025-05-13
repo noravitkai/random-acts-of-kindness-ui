@@ -34,14 +34,14 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
-        <div className="flex justify-center mb-6">
+        <header className="flex justify-center mb-6">
           <Link href="/">
             <Image src="/logo.svg" alt="Logo" width={80} height={80} />
           </Link>{" "}
-        </div>
-        <h2 className="text-center text-2xl font-bold text-foreground">
+        </header>
+        <h1 className="text-center text-2xl font-bold text-foreground">
           Log in to the Admin Dashboard
-        </h2>
+        </h1>
         <LoginForm onSubmit={handleSubmit} />
       </div>
     </main>

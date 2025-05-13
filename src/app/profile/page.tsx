@@ -133,7 +133,7 @@ const Page: React.FC = () => {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             {/* ===== Kindness Score Card ===== */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full">
                 <h2 className="text-lg font-bold mb-2">Total Kindness Score</h2>
                 <p className="text-4xl font-extrabold text-primary">
@@ -152,10 +152,10 @@ const Page: React.FC = () => {
                   </p>
                 )}
               </div>
-            </div>
+            </section>
 
             {/* ===== Completed Acts Card ===== */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
@@ -191,7 +191,10 @@ const Page: React.FC = () => {
                   )}
                 </div>
                 {/* ===== Pagination Controls ===== */}
-                <div className="flex justify-end gap-4 mt-2">
+                <nav
+                  aria-label="Pagination"
+                  className="flex justify-end gap-4 mt-2"
+                >
                   <button
                     onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                     disabled={page === 0}
@@ -212,14 +215,14 @@ const Page: React.FC = () => {
                   >
                     Next
                   </button>
-                </div>
+                </nav>
               </div>
-            </div>
+            </section>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
             {/* ===== Saved Acts Card ===== */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
@@ -261,7 +264,10 @@ const Page: React.FC = () => {
                   )}
                 </div>
                 {/* ===== Pagination Controls ===== */}
-                <div className="flex justify-end gap-4 mt-2">
+                <nav
+                  aria-label="Pagination"
+                  className="flex justify-end gap-4 mt-2"
+                >
                   <button
                     onClick={() =>
                       setSavedPage((prev) => Math.max(prev - 1, 0))
@@ -286,12 +292,12 @@ const Page: React.FC = () => {
                   >
                     Next
                   </button>
-                </div>
+                </nav>
               </div>
-            </div>
+            </section>
 
             {/* ===== Share Idea Card ===== */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
@@ -318,24 +324,27 @@ const Page: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
           {/* ===== Suggested Acts Table ===== */}
-          <ActTable
-            acts={acts}
-            currentUserId={user?.id}
-            onEdit={(act) => {
-              setSelectedAct(act);
-              setOpenEditModal(true);
-            }}
-            onDelete={(act) => {
-              setSelectedAct(act);
-              setOpenDeleteModal(true);
-            }}
-          />
+          <section>
+            <ActTable
+              acts={acts}
+              currentUserId={user?.id}
+              onEdit={(act) => {
+                setSelectedAct(act);
+                setOpenEditModal(true);
+              }}
+              onDelete={(act) => {
+                setSelectedAct(act);
+                setOpenDeleteModal(true);
+              }}
+            />
+          </section>
         </div>
 
+        {/* ===== Modals ===== */}
         <ActForm
           open={openAddModal}
           onClose={() => {
