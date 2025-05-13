@@ -51,6 +51,9 @@ export const LoginForm: FC<LoginFormProps> = ({
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      {serverError && (
+        <p className="text-center text-sm text-red-500">{serverError}</p>
+      )}
       <div className="rounded-md shadow-sm ring-1 ring-inset ring-gray-300">
         <input
           name="email"
@@ -59,7 +62,7 @@ export const LoginForm: FC<LoginFormProps> = ({
           value={formData.email}
           onChange={handleInputChange}
           required
-          className="relative block w-full rounded-t-md border-0 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="relative block w-full rounded-t-md border-0 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
         />
         {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
         <input
@@ -69,34 +72,38 @@ export const LoginForm: FC<LoginFormProps> = ({
           value={formData.password}
           onChange={handleInputChange}
           required
-          className="relative block w-full rounded-b-md border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="relative block w-full rounded-b-md border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
         />
         {errors.password && (
           <p className="text-xs text-red-500">{errors.password}</p>
         )}
       </div>
-      <div>
-        <button
-          type="submit"
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition ease-in-out duration-300 hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-        >
-          Log in
-        </button>
-      </div>
-      {serverError && (
-        <p className="text-center text-sm text-red-500">{serverError}</p>
-      )}
-      {signupLink && (
-        <p className="text-center text-sm text-gray-500">
-          Don’t have an account yet?{" "}
-          <Link
-            href={signupLink.href}
-            className="font-medium text-primary transition duration-300 hover:text-secondary"
+      <div
+        className={`flex items-center text-sm text-gray-500 mt-4 ${
+          signupLink ? "justify-between" : "justify-end"
+        }`}
+      >
+        {signupLink && (
+          <p className="text-sm text-gray-500">
+            Don’t have an account yet?{" "}
+            <Link
+              href={signupLink.href}
+              className="font-medium text-primary transition duration-300 hover:text-secondary"
+            >
+              {signupLink.text}
+            </Link>
+          </p>
+        )}
+        <div className="relative group inline-block float-right">
+          <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
+          <button
+            type="submit"
+            className="relative z-10 rounded-md border-2 border-black bg-primary px-4 py-2 text-sm font-semibold text-background hover:bg-secondary transition duration-300 cursor-pointer"
           >
-            {signupLink.text}
-          </Link>
-        </p>
-      )}
+            Log in
+          </button>
+        </div>
+      </div>
     </form>
   );
 };

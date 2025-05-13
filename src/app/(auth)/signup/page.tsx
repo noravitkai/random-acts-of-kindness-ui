@@ -4,6 +4,7 @@ import { useState, useCallback, ChangeEvent, FormEvent } from "react";
 import { useAuth, RegisterData } from "@/hooks/auth/useAuth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 /**
  * Render the signup form and handle the registration flow
@@ -79,6 +80,9 @@ export default function RegisterPage() {
       <main>
         <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
           <div className="w-full max-w-sm space-y-6">
+            <div className="flex justify-center mb-6">
+              <Image src="/logo.svg" alt="Logo" width={80} height={80} />
+            </div>
             <h2 className="text-center text-2xl font-bold text-foreground">
               Sign up for an account
             </h2>
@@ -91,7 +95,7 @@ export default function RegisterPage() {
                   value={formData.username}
                   onChange={handleInputChange}
                   required
-                  className="relative block w-full rounded-t-md border-0 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="relative block w-full rounded-t-md border-0 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
                 {errors.username && (
                   <p className="text-xs text-red-500">{errors.username}</p>
@@ -104,7 +108,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className="relative block w-full border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="relative block w-full border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
                 {errors.email && (
                   <p className="text-xs text-red-500">{errors.email}</p>
@@ -117,34 +121,37 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className="relative block w-full rounded-b-md border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="relative block w-full rounded-b-md border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
                 {errors.password && (
                   <p className="text-xs text-red-500">{errors.password}</p>
                 )}
               </div>
 
-              <div>
-                <button
-                  type="submit"
-                  className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition ease-in-out duration-300 hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-                >
-                  Sign up
-                </button>
+              <div className="flex justify-between items-center mt-4">
+                <p className="text-sm text-gray-500">
+                  Already have an account?{" "}
+                  <Link
+                    href="/login"
+                    className="font-medium text-primary transition duration-300 hover:text-secondary"
+                  >
+                    Log in!
+                  </Link>
+                </p>
+                <div className="relative group inline-block">
+                  <span className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border-2 border-dashed border-black transition-transform group-hover:translate-x-0 group-hover:translate-y-0"></span>
+                  <button
+                    type="submit"
+                    className="relative z-10 rounded-md border-2 border-black bg-primary px-4 py-2 text-sm font-semibold text-background hover:bg-secondary transition duration-300 cursor-pointer"
+                  >
+                    Sign up
+                  </button>
+                </div>
               </div>
             </form>
             {serverError && (
               <p className="text-center text-sm text-red-500">{serverError}</p>
             )}
-            <p className="text-center text-sm text-gray-500">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-primary transition duration-300 hover:text-secondary"
-              >
-                Log in!
-              </Link>
-            </p>
           </div>
         </div>
       </main>
