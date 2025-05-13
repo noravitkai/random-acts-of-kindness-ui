@@ -237,9 +237,11 @@ export default function HomePage() {
                   Whoops, no acts of kindness found – how about creating one?
                 </p>
               </div>
-              <p className="text-base text-gray-600">
-                Sign up/log in to add new ideas!
-              </p>
+              {!user && (
+                <p className="text-base text-gray-600">
+                  Sign up/log in to add new ideas!
+                </p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
