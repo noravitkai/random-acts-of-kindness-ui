@@ -27,7 +27,11 @@ export type CompletedAct = {
 
 export type SavedAct = {
   _id: string;
+  act: string;
   user: string;
-  act: Pick<KindnessAct, "_id" | "title" | "description">;
+  title: string;
+  description?: string;
+  category?: string;
+  difficulty?: "easy" | "medium" | "hard";
   savedAt: string;
 };
