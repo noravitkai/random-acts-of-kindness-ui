@@ -4,6 +4,7 @@ import { useAuth, LoginData } from "@/hooks/auth/useAuth";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import Image from "next/image";
+import Link from "next/link";
 
 /**
  * Shows a login form and handles login specifically for admins
@@ -34,7 +35,9 @@ export default function AdminLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex justify-center mb-6">
-          <Image src="/logo.svg" alt="Logo" width={80} height={80} />
+          <Link href="/">
+            <Image src="/logo.svg" alt="Logo" width={80} height={80} />
+          </Link>{" "}
         </div>
         <h2 className="text-center text-2xl font-bold text-foreground">
           Log in to the Admin Dashboard

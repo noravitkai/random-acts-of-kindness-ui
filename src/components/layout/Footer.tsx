@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 /**
  * Displays logo, tagline, copyright
@@ -17,13 +18,15 @@ export default function Footer() {
           <div className="border-t border-gray-200 pt-5"></div>
           <div className="sm:flex sm:items-center sm:justify-between">
             <div className="flex flex-col items-center sm:flex-row sm:items-center sm:justify-start gap-3">
-              <Image
-                src="/logo.svg"
-                alt="Logo"
-                width={70}
-                height={70}
-                priority
-              />
+              <Link href="/">
+                <Image
+                  src="/logo.svg"
+                  alt="Logo"
+                  width={70}
+                  height={70}
+                  priority
+                />
+              </Link>
               <div className="flex flex-col text-center sm:text-left">
                 <span className="text-base font-medium text-gray-700">
                   Random Acts of Kindness
