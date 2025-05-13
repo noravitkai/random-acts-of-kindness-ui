@@ -18,6 +18,10 @@ import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 
+/**
+ * Lets users track saved & completed acts and suggest new ones
+ * @returns {JSX.Element} – a page component for logged-in users
+ */
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
   const { acts, refetch } = useUserActs();
@@ -78,6 +82,7 @@ const Page: React.FC = () => {
       await refetchSavedActs();
       await refetch();
 
+      // Update UI: remove from saved acts and add to completed
       setSavedActs(updatedSavedActs);
       setCompleted((prevCompleted) => [newCompletedAct, ...prevCompleted]);
     } catch (error) {
@@ -90,6 +95,7 @@ const Page: React.FC = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedAct, setSelectedAct] = useState<KindnessAct | null>(null);
 
+  // Pagination setup for completed list
   const [page, setPage] = useState(0);
   const itemsPerPage = 3;
   const paginatedCompleted = [...completed]
@@ -99,6 +105,7 @@ const Page: React.FC = () => {
     )
     .slice(page * itemsPerPage, page * itemsPerPage + itemsPerPage);
 
+  // Pagination setup for saved list
   const [savedPage, setSavedPage] = useState(0);
   const savedItemsPerPage = 3;
   const paginatedSavedActs = [...savedActs]
@@ -112,8 +119,10 @@ const Page: React.FC = () => {
 
   return (
     <>
-      <section className="p-8 sm:p-10 min-h-screen">
+      {/* ===== Profile Layout ===== */}
+      <main className="p-8 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
+          {/* ===== Page Header ===== */}
           <Header
             title={<>Hello, Kind Soul!</>}
             description="Make kindness a daily habit! Keep track of your saved and completed kindness acts, celebrate, and share your ideas to keep kindness going."
@@ -123,7 +132,7 @@ const Page: React.FC = () => {
             ]}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-            {/* Kindness Score Card */}
+            {/* ===== Kindness Score Card ===== */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full">
                 <h2 className="text-lg font-bold mb-2">Total Kindness Score</h2>
@@ -145,7 +154,7 @@ const Page: React.FC = () => {
               </div>
             </div>
 
-            {/* Completed Acts Card */}
+            {/* ===== Completed Acts Card ===== */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
@@ -181,6 +190,7 @@ const Page: React.FC = () => {
                     </ul>
                   )}
                 </div>
+                {/* ===== Pagination Controls ===== */}
                 <div className="flex justify-end gap-4 mt-2">
                   <button
                     onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
@@ -208,7 +218,7 @@ const Page: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-            {/* Saved Acts Card */}
+            {/* ===== Saved Acts Card ===== */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
@@ -250,6 +260,7 @@ const Page: React.FC = () => {
                     </ul>
                   )}
                 </div>
+                {/* ===== Pagination Controls ===== */}
                 <div className="flex justify-end gap-4 mt-2">
                   <button
                     onClick={() =>
@@ -279,7 +290,7 @@ const Page: React.FC = () => {
               </div>
             </div>
 
-            {/* Share Idea Card */}
+            {/* ===== Share Idea Card ===== */}
             <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
@@ -310,7 +321,7 @@ const Page: React.FC = () => {
             </div>
           </div>
 
-          {/* Suggested Acts Table */}
+          {/* ===== Suggested Acts Table ===== */}
           <ActTable
             acts={acts}
             currentUserId={user?.id}
@@ -358,7 +369,7 @@ const Page: React.FC = () => {
             />
           </>
         )}
-      </section>
+      </main>
       <Footer />
     </>
   );

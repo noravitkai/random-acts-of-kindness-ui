@@ -20,6 +20,10 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import FetchStatus from "@/components/layout/FetchStatus";
 
+/**
+ * Shows a list of kindness acts with options to save/unsave
+ * @returns {JSX.Element} – page component with acts and alerts
+ */
 export default function HomePage() {
   const { acts, loading, error } = useKindnessActs();
   const { user, logout } = useAuth();
@@ -37,6 +41,11 @@ export default function HomePage() {
     message: string;
   } | null>(null);
 
+  /**
+   * Toggles saving or unsaving an act for a specific user
+   * @param {string} actId – the ID of the act to save or unsave
+   * @returns {Promise<void>}
+   */
   const handleSaveAct = async (actId: string) => {
     try {
       const token = localStorage.getItem("lsToken");
@@ -118,6 +127,7 @@ export default function HomePage() {
 
   return (
     <>
+      {/* ===== Toast Notification ===== */}
       <Transition
         show={!!notification}
         as={Fragment}
@@ -187,6 +197,7 @@ export default function HomePage() {
           </div>
         </div>
       </Transition>
+      {/* ===== Main Content ===== */}
       <main className="p-6 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <Header

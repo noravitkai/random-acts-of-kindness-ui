@@ -1,30 +1,35 @@
 "use client";
 
-import { useState } from "react";
 import { useAuth, LoginData } from "@/hooks/auth/useAuth";
 import { useRouter } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import Image from "next/image";
 
 /**
- * Render the login form and handle the login flow
+ * Shows a login form and handles login specifically for admins
+ * @returns {JSX.Element}
  */
 export default function AdminLoginPage() {
-  const { login, error: serverError } = useAuth();
-  const [localError, setLocalError] = useState<string | null>(null);
+  const { login } = useAuth();
   const router = useRouter();
 
+  /**
+   * Handles login form submission
+   * @param {LoginData} data – email and password entered by the admin
+   * @returns {Promise<void>}
+   */
   async function handleSubmit(data: LoginData) {
-    setLocalError(null);
     const user = await login(data);
     if (user.role !== "admin") {
-      setLocalError("Access denied to non-admin users.");
-      return;
+      throw new Error("Access denied to non-admin users.");
     }
     console.log("Admin logged in:", user);
     router.push("/admin/dashboard");
   }
 
+  {
+    /* ===== Login Page Layout ===== */
+  }
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
@@ -34,10 +39,7 @@ export default function AdminLoginPage() {
         <h2 className="text-center text-2xl font-bold text-foreground">
           Log in to the Admin Dashboard
         </h2>
-        <LoginForm
-          onSubmit={handleSubmit}
-          serverError={localError || serverError}
-        />
+        <LoginForm onSubmit={handleSubmit} />
       </div>
     </main>
   );

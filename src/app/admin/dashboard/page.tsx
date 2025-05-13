@@ -12,6 +12,10 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import FetchStatus from "@/components/layout/FetchStatus";
 
+/**
+ * Shows all acts and lets admins manage (approve, reject, and CRUD)
+ * @returns {JSX.Element} – page component
+ */
 export default function Dashboard() {
   const { logout } = useAuth();
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -41,9 +45,11 @@ export default function Dashboard() {
 
   return (
     <>
+      {/* ===== Dashboard Layout ===== */}
       <main>
         <section className="p-8 sm:p-10 min-h-screen">
           <div className="max-w-7xl mx-auto">
+            {/* ===== Page Header ===== */}
             <Header
               title="Admin Panel and Tools"
               description="Manage, approve, reject, edit, moderate, and guide user-contributed ideas of kindness to keep the community inspired."
@@ -65,6 +71,7 @@ export default function Dashboard() {
               ]}
             />
             <div className="mt-8 w-full max-w-7xl">
+              {/* ===== Act Table and Modals ===== */}
               <ActTable
                 acts={acts}
                 isAdminView

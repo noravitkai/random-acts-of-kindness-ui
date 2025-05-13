@@ -16,12 +16,21 @@ interface ActDeleteProps {
   onSuccess?: () => void;
 }
 
+/**
+ * Called by admin from the dashboard. Calls deleteAct and handles close/success.
+ * @param {ActDeleteProps} props – open state, act ID, and callback handlers
+ * @returns {JSX.Element} – dialog modal for confirming and deleting acts
+ */
 export default function ActDelete({
   open,
   onClose,
   actId,
   onSuccess,
 }: ActDeleteProps) {
+  /**
+   * Handles delete
+   * Closes modal and triggers success callback if successful
+   */
   const handleDelete = async () => {
     try {
       await deleteAct(actId);
@@ -32,6 +41,9 @@ export default function ActDelete({
     }
   };
 
+  {
+    /* ===== Delete Confirmation Modal ===== */
+  }
   return (
     <Dialog open={open} onClose={onClose} className="relative z-50">
       <DialogBackdrop className="fixed inset-0 bg-black/50" />

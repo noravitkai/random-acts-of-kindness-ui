@@ -4,18 +4,17 @@ import { fetcher } from "@/utils/fetcher";
 import type { User } from "@/types/user";
 import { jwtDecode } from "jwt-decode";
 
+/**
+ * Handles signup, login, logout, session tracking, and current user state
+ * @returns auth helpers and user info
+ */
+
 type JWTPayload = {
   userId: string;
   username: string;
   email: string;
   role: "user" | "admin";
   exp: number;
-};
-
-// Data sent to the server when user logs in
-export type LoginData = {
-  email: string;
-  password: string;
 };
 
 // Data sent to the server when user signs up
@@ -25,10 +24,12 @@ export type RegisterData = {
   password: string;
 };
 
-/**
- * Custom hook for authentication used in the signup and login pages
- * Register, login & logout functionality, along with error state, and the current user
- */
+// Data sent to the server when user logs in
+export type LoginData = {
+  email: string;
+  password: string;
+};
+
 export function useAuth() {
   const router = useRouter();
   const pathname = usePathname();
@@ -38,6 +39,10 @@ export function useAuth() {
 
   const logoutTimer = useRef<number | null>(null);
 
+  /**
+   * Clears session and logs the user out
+   * Redirects based on the role
+   */
   const logout = useCallback(() => {
     if (logoutTimer.current) {
       clearTimeout(logoutTimer.current);
@@ -50,6 +55,10 @@ export function useAuth() {
     router.replace(redirectPath);
   }, [router, pathname]);
 
+  /**
+   * Auto-logs out user when a token expires
+   * @param exp – expiration timestamp of token from JWT
+   */
   const scheduleLogout = useCallback(
     (exp: number) => {
       const msUntilExpiry = exp * 1000 - Date.now();
@@ -64,6 +73,7 @@ export function useAuth() {
     [logout]
   );
 
+  // Check token on first load and setup auto-logout
   useEffect(() => {
     const token = localStorage.getItem("lsToken");
     if (token) {
@@ -88,6 +98,7 @@ export function useAuth() {
     };
   }, [scheduleLogout]);
 
+  // Sync logout/login state across multiple tabs
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === "lsToken") {
@@ -123,7 +134,7 @@ export function useAuth() {
   }, [scheduleLogout, router, pathname]);
 
   /**
-   * Call login API with form data
+   * Calls login API with form data
    * @param data - login details
    * @returns the logged in User object
    * @throws error with a message on failure
@@ -153,7 +164,7 @@ export function useAuth() {
   }
 
   /**
-   * Call register API with form data
+   * Calls register API with form data
    * @param data - registration details
    * @returns the created User object
    * @throws error with a message on failure

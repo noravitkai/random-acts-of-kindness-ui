@@ -19,6 +19,11 @@ interface ActTableProps {
   onReject?: (act: KindnessAct) => void;
 }
 
+/**
+ * Admins can approve/reject suggestions; users can view and manage their own
+ * @param {ActTableProps} props – list of kindness acts, user ID, admin flag, and callbacks
+ * @returns {JSX.Element} – table component to display a list of kindness acts
+ */
 export default function ActTable({
   acts,
   currentUserId,
@@ -28,10 +33,12 @@ export default function ActTable({
   onApprove,
   onReject,
 }: ActTableProps) {
+  // Only show user's own acts, unless admin
   const displayedActs = isAdminView
     ? acts
     : acts.filter((act) => act.createdBy?._id === currentUserId);
 
+  // Sort acts: pending first (for admins), then by date
   const actsToRender = [...displayedActs].sort((a, b) => {
     if (isAdminView) {
       const statusOrder =
@@ -41,6 +48,7 @@ export default function ActTable({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  // Pagination state
   const [page, setPage] = useState(0);
   const itemsPerPage = 20;
   const paginatedActs = actsToRender.slice(
@@ -52,6 +60,7 @@ export default function ActTable({
     <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
       <div className="overflow-x-auto bg-background border-2 border-black rounded-lg shadow relative z-10">
         <table className="min-w-full text-sm">
+          {/* ===== Table Header ===== */}
           <thead className="bg-primary text-left uppercase text-xs">
             <tr>
               <th className="px-6 py-4 text-background font-bold">
@@ -62,6 +71,7 @@ export default function ActTable({
               <th className="px-6 py-4 text-background font-bold">Actions</th>
             </tr>
           </thead>
+          {/* ===== Table Body ===== */}
           <tbody>
             {actsToRender.length === 0 ? (
               <tr>
@@ -138,6 +148,7 @@ export default function ActTable({
             )}
           </tbody>
         </table>
+        {/* ===== Pagination Controls ===== */}
         <div className="flex justify-center p-4 space-x-4">
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 0))}

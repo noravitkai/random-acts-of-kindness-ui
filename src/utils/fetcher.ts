@@ -1,4 +1,4 @@
-// Helper to call fetch(), handle JSON, and surface errors
+// Shared fetch helper – adds token, checks for session, and returns data
 
 import { jwtDecode } from "jwt-decode";
 
@@ -13,9 +13,11 @@ export async function fetcher<T>(
   url: string,
   init?: RequestInit
 ): Promise<T | null> {
+  // Grab the token from localStorage
   let token: string | null = null;
   if (typeof window !== "undefined") {
     token = localStorage.getItem("lsToken");
+    // If token exists, check if it's still valid
     if (token) {
       try {
         const { exp } = jwtDecode<{ exp: number }>(token);
@@ -34,6 +36,7 @@ export async function fetcher<T>(
       }
     }
   }
+  // Set up headers, include token if we have one
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -44,6 +47,7 @@ export async function fetcher<T>(
     headers,
     ...init,
   });
+  // If the user is not allowed (401), log them out and send to login page
   if (response.status === 401) {
     localStorage.removeItem("lsToken");
     const redirectPath = window.location.pathname.startsWith("/admin")
@@ -52,6 +56,7 @@ export async function fetcher<T>(
     window.location.replace(redirectPath);
     throw new Error("Unauthorized");
   }
+  // If something else went wrong, try to get the error message
   if (!response.ok) {
     let message = `Error ${response.status}`;
     try {
@@ -60,9 +65,11 @@ export async function fetcher<T>(
     } catch {}
     throw new Error(message);
   }
+  // If server response is no content, just return null
   if (response.status === 204) {
     return null;
   }
+  // Return the data got
   const payload = await response.json();
   return payload as T;
 }

@@ -11,12 +11,12 @@ import { Transition } from "@headlessui/react";
 import { ExclamationCircleIcon, XMarkIcon } from "@heroicons/react/20/solid";
 
 /**
- * Render the signup form and handle the registration flow
- * Manage form state, perform client-side validation, and call the registration API
+ * Shows form for signup, validates input and registers a user
+ * @returns {JSX.Element} – page component that lets users create an account
  */
 export default function RegisterPage() {
-  const { register, error: serverError } = useAuth(); // Rename hook's error to serverError so it doesn't clash with form errors
-  const router = useRouter(); // Router for redirection after successful registration
+  const { register, error: serverError } = useAuth(); // Rename hook's error to serverError so it doesn't conflict with form errors
+  const router = useRouter();
 
   // Form data state
   const [formData, setFormData] = useState<RegisterData>({
@@ -31,8 +31,8 @@ export default function RegisterPage() {
   } | null>(null);
 
   /**
-   * Handle input changes by updating formData
-   * Prevent recreating this handler on render via useCallback
+   * Updates form state when input fields change
+   * @param {ChangeEvent<HTMLInputElement>} e – the input field event
    */
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     // Extract field name and value from the event
@@ -41,8 +41,8 @@ export default function RegisterPage() {
   }, []);
 
   /**
-   * Validate input fields and set error messages
-   * TODO: Move these rules into a shared helper for reuse?
+   * Checks the form inputs and shows a toast if something's wrong
+   * @returns {boolean} – true if the form is valid, and false otherwise
    */
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -67,8 +67,9 @@ export default function RegisterPage() {
   };
 
   /**
-   * Submit handler for the registration form
-   * Run validation, call register(), and redirect on success
+   * Validates the form, registers the user and redirects to login
+   * @param {FormEvent<HTMLFormElement>} e – form event triggering
+   * @returns {Promise<void>}
    */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,9 +80,9 @@ export default function RegisterPage() {
       console.log("User signed up:", user);
       router.push("/login");
     } catch {
-      // Show server error as toast
+      // Fallback message if server doesn't provide one
       setNotification({
-        message: serverError || "Registration failed. Please try again.",
+        message: serverError || "Registration failed. Try again, please.",
       });
       setTimeout(() => setNotification(null), 5000);
     }
@@ -89,6 +90,7 @@ export default function RegisterPage() {
 
   return (
     <>
+      {/* ===== Toast Notification ===== */}
       <Transition
         show={!!notification}
         as={Fragment}
@@ -122,6 +124,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </Transition>
+      {/* ===== Sign-Up Page Layout ===== */}
       <main>
         <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
           <div className="w-full max-w-sm space-y-6">

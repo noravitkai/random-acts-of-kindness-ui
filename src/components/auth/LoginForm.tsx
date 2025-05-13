@@ -23,7 +23,9 @@ interface LoginFormProps {
 }
 
 /**
- * Shared login form component
+ * Validates fields, shows error toast if needed, and submits data on the form
+ * @param {LoginFormProps} props – submit handler and optional sign-up link
+ * @returns {JSX.Element} – shared login form component (users & admins)
  */
 export const LoginForm: FC<LoginFormProps> = ({ onSubmit, signupLink }) => {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -34,11 +36,19 @@ export const LoginForm: FC<LoginFormProps> = ({ onSubmit, signupLink }) => {
     null
   );
 
+  /**
+   * Updates form state when input fields change
+   * @param {ChangeEvent<HTMLInputElement>} e – input change event
+   */
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((f) => ({ ...f, [name]: value }));
   }, []);
 
+  /**
+   * Validates the form fields and shows error toast if needed
+   * @returns {boolean} – true if form is valid, and false otherwise
+   */
   const validateForm = () => {
     const newErrors: Partial<LoginFormData> = {};
     if (!formData.email) newErrors.email = "Email is required.";
@@ -54,6 +64,10 @@ export const LoginForm: FC<LoginFormProps> = ({ onSubmit, signupLink }) => {
     return true;
   };
 
+  /**
+   * Handles form submission and passes data to parent onSubmit
+   * @param {FormEvent<HTMLFormElement>} e – submit event triggered
+   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -70,6 +84,8 @@ export const LoginForm: FC<LoginFormProps> = ({ onSubmit, signupLink }) => {
 
   return (
     <>
+      {/* ===== Toast Notification ===== */}
+
       <Transition
         show={!!notification}
         as={Fragment}
@@ -103,6 +119,7 @@ export const LoginForm: FC<LoginFormProps> = ({ onSubmit, signupLink }) => {
           </div>
         </div>
       </Transition>
+      {/* ===== Login Form Layout ===== */}
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="rounded-md shadow-sm ring-1 ring-inset ring-gray-300">
           <input

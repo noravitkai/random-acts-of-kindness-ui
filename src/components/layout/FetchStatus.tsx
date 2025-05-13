@@ -10,12 +10,18 @@ interface FetchStatusProps {
   errorMessagePrefix?: string;
 }
 
+/**
+ * Shows loading or error message during data fetching
+ * @param {FetchStatusProps} props – includes loading/error state and messages
+ * @returns {JSX.Element | null}
+ */
 export default function FetchStatus({
   loading,
   error,
   loadingMessage = "Loading…",
   errorMessagePrefix = "Error:",
 }: FetchStatusProps) {
+  // Show spinner or error icon with message
   if (loading || error) {
     return (
       <main className="p-6 sm:p-10 min-h-screen">
