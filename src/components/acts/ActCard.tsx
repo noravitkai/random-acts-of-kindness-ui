@@ -5,6 +5,7 @@ import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import type { KindnessAct } from "@/types/act";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { useState, useEffect } from "react";
 
 interface ActCardProps {
   act: KindnessAct;
@@ -20,6 +21,11 @@ export default function ActCard({
   children,
 }: ActCardProps) {
   const { user } = useAuth();
+
+  const [savedState, setSavedState] = useState(isSaved);
+  useEffect(() => {
+    setSavedState(isSaved);
+  }, [isSaved]);
 
   return (
     <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
@@ -45,11 +51,11 @@ export default function ActCard({
             {user?.role !== "admin" && (
               <button
                 onClick={() => onSave(act._id)}
-                aria-label={isSaved ? "Unsave Act" : "Save Act"}
+                aria-label={savedState ? "Unsave Act" : "Save Act"}
                 className="relative group transition-transform ease-in-out duration-300 cursor-pointer"
               >
                 {/* Heart Icon */}
-                {isSaved ? (
+                {savedState ? (
                   <HeartSolid className="w-6 h-6 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
                 ) : (
                   <HeartOutline className="w-6 h-6 text-gray-400 transform transition-transform duration-300 ease-in-out hover:scale-110" />
@@ -58,17 +64,17 @@ export default function ActCard({
                 {/* Tooltip */}
                 <div
                   className={`absolute left-full top-1/2 z-20 ml-3 -translate-y-1/2 whitespace-nowrap rounded px-3 py-[4px] text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out ${
-                    isSaved
+                    savedState
                       ? "bg-primary text-background"
                       : "bg-gray-400 text-white"
                   }`}
                 >
                   <span
                     className={`absolute left-[-4px] top-1/2 -translate-y-1/2 -rotate-45 w-2 h-2 transform origin-center ${
-                      isSaved ? "bg-primary" : "bg-gray-400"
+                      savedState ? "bg-primary" : "bg-gray-400"
                     }`}
                   ></span>
-                  {isSaved ? "Unsave" : "Save"}
+                  {savedState ? "Unsave" : "Save"}
                 </div>
               </button>
             )}

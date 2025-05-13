@@ -48,7 +48,7 @@ export default function HomePage() {
         return;
       }
 
-      const savedAct = savedActs.find((saved) => saved.act._id === actId);
+      const savedAct = savedActs.find((saved) => saved.act === actId);
       const isAlreadySaved = !!savedAct;
       const endpoint = isAlreadySaved
         ? `http://localhost:4000/api/saved/${savedAct._id}`
@@ -212,7 +212,7 @@ export default function HomePage() {
                 key={act._id}
                 act={act}
                 onSave={handleSaveAct}
-                isSaved={savedActs.some((saved) => saved.act._id === act._id)}
+                isSaved={savedActs.some((saved) => saved.act === act._id)}
               />
             ))}
           </div>
