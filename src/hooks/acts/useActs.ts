@@ -320,22 +320,38 @@ export async function deleteAct(id: string): Promise<{ message: string }> {
  */
 export function useAllActs() {
   const [acts, setActs] = useState<KindnessAct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchAllActs = useCallback(() => {
-    fetcher<KindnessAct[]>("http://localhost:4000/api/acts/all", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "auth-token": localStorage.getItem("lsToken") || "",
-      },
-    }).then((data) => {
+  const fetchAllActs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetcher<KindnessAct[]>(
+        "http://localhost:4000/api/acts/all",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "auth-token": localStorage.getItem("lsToken") || "",
+          },
+        }
+      );
       setActs(data || []);
-    });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     fetchAllActs();
   }, [fetchAllActs]);
 
-  return { acts, refetch: fetchAllActs };
+  return { acts, loading, error, refetch: fetchAllActs };
 }

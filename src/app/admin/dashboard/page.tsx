@@ -10,11 +10,10 @@ import { KindnessAct } from "@/types/act";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import FetchStatus from "@/components/layout/FetchStatus";
 
 export default function Dashboard() {
   const { logout } = useAuth();
-  const { acts, refetch } = useAllActs();
-
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -26,6 +25,19 @@ export default function Dashboard() {
   const [statusAction, setStatusAction] = useState<"approved" | "rejected">(
     "approved"
   );
+
+  const { acts, loading, error, refetch } = useAllActs();
+
+  if (loading || error) {
+    return (
+      <FetchStatus
+        loading={loading}
+        error={error}
+        loadingMessage="Loading admin dashboard…"
+        errorMessagePrefix="Error loading admin dashboard:"
+      />
+    );
+  }
 
   return (
     <>

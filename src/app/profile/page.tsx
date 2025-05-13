@@ -26,9 +26,13 @@ const Page: React.FC = () => {
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
 
-  const { savedActs: savedActsData, refetch: refetchSavedActs } =
-    useSavedActs();
-  const { completed: completedData } = useCompletedActs(user?.id || "");
+  const {
+    savedActs: savedActsData,
+    refetch: refetchSavedActs,
+    loading: loadingSaved,
+  } = useSavedActs();
+  const { completed: completedData, loading: loadingCompleted } =
+    useCompletedActs(user?.id || "");
 
   React.useEffect(() => {
     if (savedActsData !== undefined) setSavedActs(savedActsData);
@@ -148,7 +152,11 @@ const Page: React.FC = () => {
                   <h2 className="text-lg font-bold mb-2">
                     Completed Acts of Kindness
                   </h2>
-                  {completed.length === 0 ? (
+                  {loadingCompleted ? (
+                    <p className="text-sm text-gray-500">
+                      Loading list of completed kindness acts…
+                    </p>
+                  ) : completed.length === 0 ? (
                     <p className="text-sm text-gray-500">
                       No kindness acts completed yet. Start with one small act
                       today!
@@ -207,7 +215,11 @@ const Page: React.FC = () => {
                   <h2 className="text-lg font-bold mb-2">
                     Saved Acts of Kindness
                   </h2>
-                  {savedActs.length === 0 ? (
+                  {loadingSaved ? (
+                    <p className="text-sm text-gray-500">
+                      Loading list of saved kindness acts…
+                    </p>
+                  ) : savedActs.length === 0 ? (
                     <p className="text-sm text-gray-500">
                       No saved acts here yet – add some acts from the collection
                       and let the good vibes roll!
