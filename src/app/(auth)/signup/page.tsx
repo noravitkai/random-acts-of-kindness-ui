@@ -6,6 +6,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+import { Fragment, useState as useLocalState } from "react";
+import { Transition } from "@headlessui/react";
+import { ExclamationCircleIcon, XMarkIcon } from "@heroicons/react/20/solid";
+
 /**
  * Render the signup form and handle the registration flow
  * Manage form state, perform client-side validation, and call the registration API
@@ -20,10 +24,11 @@ export default function RegisterPage() {
     email: "",
     password: "",
   });
-  // Form error state
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof RegisterData, string>>
-  >({});
+
+  // Toast notification state
+  const [notification, setNotification] = useLocalState<{
+    message: string;
+  } | null>(null);
 
   /**
    * Handle input changes by updating formData
@@ -40,7 +45,7 @@ export default function RegisterPage() {
    * TODO: Move these rules into a shared helper for reuse?
    */
   const validateForm = () => {
-    const newErrors: typeof errors = {};
+    const newErrors: Record<string, string> = {};
     if (!formData.username) newErrors.username = "Please provide a username.";
     else if (formData.username.length < 2)
       newErrors.username = "Username must be at least 2 characters.";
@@ -52,9 +57,13 @@ export default function RegisterPage() {
       newErrors.password = "Password must be at least 6 characters.";
     else if (formData.password.length > 20)
       newErrors.password = "Password cannot exceed 20 characters.";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (Object.keys(newErrors).length > 0) {
+      const firstError = Object.values(newErrors)[0]!;
+      setNotification({ message: firstError });
+      setTimeout(() => setNotification(null), 5000);
+      return false;
+    }
+    return true;
   };
 
   /**
@@ -70,13 +79,49 @@ export default function RegisterPage() {
       console.log("User signed up:", user);
       router.push("/login");
     } catch {
-      // TODO: Display UI feedback
-      console.log("Server error:", serverError);
+      // Show server error as toast
+      setNotification({
+        message: serverError || "Registration failed. Please try again.",
+      });
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
   return (
     <>
+      <Transition
+        show={!!notification}
+        as={Fragment}
+        enter="transform transition ease-out duration-300"
+        enterFrom="translate-y-2 opacity-0"
+        enterTo="translate-y-0 opacity-100"
+        leave="transition ease-in duration-100"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div
+          aria-live="assertive"
+          className="fixed inset-0 flex items-start px-4 pt-6 pointer-events-none z-50"
+        >
+          <div className="w-full max-w-sm mx-auto">
+            <div className="pointer-events-auto rounded-lg bg-background shadow-lg ring-1 ring-black/5 overflow-hidden">
+              <div className="p-4 flex items-center">
+                <ExclamationCircleIcon className="w-6 h-6 text-primary" />
+                <div className="ml-3 text-sm text-gray-900 flex-1">
+                  {notification?.message}
+                </div>
+                <button
+                  onClick={() => setNotification(null)}
+                  className="ml-4 rounded-md bg-background text-gray-400 hover:text-gray-500 transition ease-in-out duration-300 cursor-pointer"
+                >
+                  <span className="sr-only">Close</span>
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
       <main>
         <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
           <div className="w-full max-w-sm space-y-6">
@@ -97,9 +142,6 @@ export default function RegisterPage() {
                   required
                   className="relative block w-full rounded-t-md border-0 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
-                {errors.username && (
-                  <p className="text-xs text-red-500">{errors.username}</p>
-                )}
 
                 <input
                   name="email"
@@ -110,9 +152,6 @@ export default function RegisterPage() {
                   required
                   className="relative block w-full border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email}</p>
-                )}
 
                 <input
                   name="password"
@@ -123,9 +162,6 @@ export default function RegisterPage() {
                   required
                   className="relative block w-full rounded-b-md border-t border-gray-300 px-3 py-2 text-sm text-foreground placeholder:text-gray-500 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 />
-                {errors.password && (
-                  <p className="text-xs text-red-500">{errors.password}</p>
-                )}
               </div>
 
               <div className="flex justify-between items-center mt-4">
@@ -149,9 +185,6 @@ export default function RegisterPage() {
                 </div>
               </div>
             </form>
-            {serverError && (
-              <p className="text-center text-sm text-red-500">{serverError}</p>
-            )}
           </div>
         </div>
       </main>
