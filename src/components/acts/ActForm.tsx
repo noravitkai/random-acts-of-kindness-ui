@@ -122,13 +122,15 @@ export default function ActForm({
                     htmlFor="title"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Title
+                    Title (max 60 characters)
                   </label>
                   <input
                     id="title"
                     name="title"
                     type="text"
                     required
+                    minLength={5}
+                    maxLength={60}
                     value={form.title}
                     onChange={handleChange}
                     placeholder="Give the act a clear title"
@@ -140,12 +142,14 @@ export default function ActForm({
                     htmlFor="description"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Description
+                    Description (max 255 characters)
                   </label>
                   <textarea
                     id="description"
                     name="description"
                     required
+                    minLength={20}
+                    maxLength={255}
                     value={form.description}
                     onChange={handleChange}
                     placeholder="Describe what someone would do when completing it"
@@ -157,7 +161,7 @@ export default function ActForm({
                     htmlFor="difficulty"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Difficulty
+                    Difficulty (select the level)
                   </label>
                   <select
                     id="difficulty"
