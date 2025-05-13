@@ -63,7 +63,11 @@ const Page: React.FC = () => {
       );
       const newCompletedAct: CompletedAct = {
         _id: savedAct._id,
-        act: { _id: savedAct._id, title: savedAct.title },
+        act: savedAct.act,
+        title: savedAct.title,
+        description: savedAct.description,
+        category: savedAct.category,
+        difficulty: savedAct.difficulty,
         completedAt: new Date().toISOString(),
       };
 
@@ -158,7 +162,7 @@ const Page: React.FC = () => {
                         >
                           <CheckCircleIcon className="w-5 h-5 mt-0.5 text-primary" />
                           <div className="flex flex-col">
-                            <span>{item.act?.title || "Untitled"}</span>
+                            <span>{item.title}</span>
                             <span className="text-xs text-gray-500">
                               Completed on{" "}
                               {new Date(item.completedAt).toLocaleDateString()}

@@ -50,10 +50,7 @@ export default function ActCard({
           <div className="flex justify-start mt-4">
             {user?.role !== "admin" && (
               <button
-                onClick={() => {
-                  setSavedState((prev) => !prev);
-                  onSave(act._id);
-                }}
+                onClick={() => onSave(act._id)}
                 aria-label={savedState ? "Unsave Act" : "Save Act"}
                 className="relative group transition-transform ease-in-out duration-300 cursor-pointer"
               >
