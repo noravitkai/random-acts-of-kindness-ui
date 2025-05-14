@@ -7,14 +7,23 @@ import {
   ExclamationTriangleIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import { BookmarkIcon, BookmarkSlashIcon } from "@heroicons/react/24/solid";
+import {
+  BookmarkIcon,
+  BookmarkSlashIcon,
+  HeartIcon,
+} from "@heroicons/react/24/solid";
 import ActCard from "@/components/acts/ActCard";
 import { useKindnessActs, useSavedActs } from "@/hooks/acts/useActs";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { Transition } from "@headlessui/react";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import FetchStatus from "@/components/layout/FetchStatus";
 
+/**
+ * Shows a list of kindness acts with options to save/unsave
+ * @returns {JSX.Element} – page component with acts and alerts
+ */
 export default function HomePage() {
   const { acts, loading, error } = useKindnessActs();
   const { user, logout } = useAuth();
@@ -32,6 +41,11 @@ export default function HomePage() {
     message: string;
   } | null>(null);
 
+  /**
+   * Toggles saving or unsaving an act for a specific user
+   * @param {string} actId – the ID of the act to save or unsave
+   * @returns {Promise<void>}
+   */
   const handleSaveAct = async (actId: string) => {
     try {
       const token = localStorage.getItem("lsToken");
@@ -51,8 +65,8 @@ export default function HomePage() {
       const savedAct = savedActs.find((saved) => saved.act === actId);
       const isAlreadySaved = !!savedAct;
       const endpoint = isAlreadySaved
-        ? `http://localhost:4000/api/saved/${savedAct._id}`
-        : "http://localhost:4000/api/saved";
+        ? `https://random-acts-of-kindness-api.onrender.com/api/saved/${savedAct._id}`
+        : "https://random-acts-of-kindness-api.onrender.com/api/saved";
       const method = isAlreadySaved ? "DELETE" : "POST";
 
       const res = await fetch(endpoint, {
@@ -100,12 +114,20 @@ export default function HomePage() {
     }
   };
 
-  if (loading) return <p className="p-8">Loading acts…</p>;
-  if (error) return <p className="p-8 text-red-600">Error: {error}</p>;
-  if (acts.length === 0) return <p className="p-8">No acts found.</p>;
+  if (loading || error) {
+    return (
+      <FetchStatus
+        loading={loading}
+        error={error}
+        loadingMessage="Loading acts of kindness…"
+        errorMessagePrefix="Error loading acts:"
+      />
+    );
+  }
 
   return (
     <>
+      {/* ===== Toast Notification ===== */}
       <Transition
         show={!!notification}
         as={Fragment}
@@ -175,6 +197,7 @@ export default function HomePage() {
           </div>
         </div>
       </Transition>
+      {/* ===== Main Content ===== */}
       <main className="p-6 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <Header
@@ -206,16 +229,41 @@ export default function HomePage() {
                   ]
             }
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-            {acts.map((act) => (
-              <ActCard
-                key={act._id}
-                act={act}
-                onSave={handleSaveAct}
-                isSaved={savedActs.some((saved) => saved.act === act._id)}
-              />
-            ))}
-          </div>
+          {acts.length === 0 ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-1">
+                <HeartIcon className="w-5 h-5 text-primary" />
+                <p className="text-base font-medium text-gray-900">
+                  Whoops, no acts of kindness found – how about creating one?
+                </p>
+              </div>
+              {!user && (
+                <p className="text-base text-gray-600">
+                  Sign up/log in to add new ideas!
+                </p>
+              )}
+            </div>
+          ) : (
+            (() => {
+              const sortedActs = [...acts].sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              );
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+                  {sortedActs.map((act) => (
+                    <ActCard
+                      key={act._id}
+                      act={act}
+                      onSave={handleSaveAct}
+                      isSaved={savedActs.some((saved) => saved.act === act._id)}
+                    />
+                  ))}
+                </div>
+              );
+            })()
+          )}
         </div>
       </main>
       <Footer />

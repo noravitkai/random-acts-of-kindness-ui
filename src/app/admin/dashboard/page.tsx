@@ -10,11 +10,14 @@ import { KindnessAct } from "@/types/act";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import FetchStatus from "@/components/layout/FetchStatus";
 
+/**
+ * Shows all acts and lets admins manage (approve, reject, and CRUD)
+ * @returns {JSX.Element} – page component
+ */
 export default function Dashboard() {
   const { logout } = useAuth();
-  const { acts, refetch } = useAllActs();
-
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -27,11 +30,26 @@ export default function Dashboard() {
     "approved"
   );
 
+  const { acts, loading, error, refetch } = useAllActs();
+
+  if (loading || error) {
+    return (
+      <FetchStatus
+        loading={loading}
+        error={error}
+        loadingMessage="Loading admin dashboard…"
+        errorMessagePrefix="Error loading admin dashboard:"
+      />
+    );
+  }
+
   return (
     <>
+      {/* ===== Dashboard Layout ===== */}
       <main>
-        <section className="p-8 sm:p-10 min-h-screen">
+        <div className="p-8 sm:p-10 min-h-screen">
           <div className="max-w-7xl mx-auto">
+            {/* ===== Page Header ===== */}
             <Header
               title="Admin Panel and Tools"
               description="Manage, approve, reject, edit, moderate, and guide user-contributed ideas of kindness to keep the community inspired."
@@ -53,6 +71,7 @@ export default function Dashboard() {
               ]}
             />
             <div className="mt-8 w-full max-w-7xl">
+              {/* ===== Act Table and Modals ===== */}
               <ActTable
                 acts={acts}
                 isAdminView
@@ -118,7 +137,7 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-        </section>
+        </div>
       </main>
       <Footer />
     </>

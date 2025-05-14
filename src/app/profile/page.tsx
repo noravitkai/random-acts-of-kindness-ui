@@ -18,6 +18,10 @@ import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 
+/**
+ * Lets users track saved & completed acts and suggest new ones
+ * @returns {JSX.Element} – a page component for logged-in users
+ */
 const Page: React.FC = () => {
   const { logout, user } = useAuth();
   const { acts, refetch } = useUserActs();
@@ -26,9 +30,13 @@ const Page: React.FC = () => {
   const [savedActs, setSavedActs] = useState<SavedAct[]>([]);
   const [completed, setCompleted] = useState<CompletedAct[]>([]);
 
-  const { savedActs: savedActsData, refetch: refetchSavedActs } =
-    useSavedActs();
-  const { completed: completedData } = useCompletedActs(user?.id || "");
+  const {
+    savedActs: savedActsData,
+    refetch: refetchSavedActs,
+    loading: loadingSaved,
+  } = useSavedActs();
+  const { completed: completedData, loading: loadingCompleted } =
+    useCompletedActs(user?.id || "");
 
   React.useEffect(() => {
     if (savedActsData !== undefined) setSavedActs(savedActsData);
@@ -41,7 +49,7 @@ const Page: React.FC = () => {
   const handleMarkAsCompleted = async (savedAct: SavedAct) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/saved/${savedAct._id}/complete`,
+        `https://random-acts-of-kindness-api.onrender.com/api/saved/${savedAct._id}/complete`,
         {
           method: "PUT",
           headers: {
@@ -74,6 +82,7 @@ const Page: React.FC = () => {
       await refetchSavedActs();
       await refetch();
 
+      // Update UI: remove from saved acts and add to completed
       setSavedActs(updatedSavedActs);
       setCompleted((prevCompleted) => [newCompletedAct, ...prevCompleted]);
     } catch (error) {
@@ -86,6 +95,7 @@ const Page: React.FC = () => {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedAct, setSelectedAct] = useState<KindnessAct | null>(null);
 
+  // Pagination setup for completed list
   const [page, setPage] = useState(0);
   const itemsPerPage = 3;
   const paginatedCompleted = [...completed]
@@ -95,6 +105,7 @@ const Page: React.FC = () => {
     )
     .slice(page * itemsPerPage, page * itemsPerPage + itemsPerPage);
 
+  // Pagination setup for saved list
   const [savedPage, setSavedPage] = useState(0);
   const savedItemsPerPage = 3;
   const paginatedSavedActs = [...savedActs]
@@ -108,8 +119,10 @@ const Page: React.FC = () => {
 
   return (
     <>
-      <section className="p-8 sm:p-10 min-h-screen">
+      {/* ===== Profile Layout ===== */}
+      <main className="p-8 sm:p-10 min-h-screen">
         <div className="max-w-7xl mx-auto">
+          {/* ===== Page Header ===== */}
           <Header
             title={<>Hello, Kind Soul!</>}
             description="Make kindness a daily habit! Keep track of your saved and completed kindness acts, celebrate, and share your ideas to keep kindness going."
@@ -119,8 +132,8 @@ const Page: React.FC = () => {
             ]}
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-            {/* Kindness Score Card */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            {/* ===== Kindness Score Card ===== */}
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full">
                 <h2 className="text-lg font-bold mb-2">Total Kindness Score</h2>
                 <p className="text-4xl font-extrabold text-primary">
@@ -139,16 +152,20 @@ const Page: React.FC = () => {
                   </p>
                 )}
               </div>
-            </div>
+            </section>
 
-            {/* Completed Acts Card */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            {/* ===== Completed Acts Card ===== */}
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
                     Completed Acts of Kindness
                   </h2>
-                  {completed.length === 0 ? (
+                  {loadingCompleted ? (
+                    <p className="text-sm text-gray-500">
+                      Loading list of completed kindness acts…
+                    </p>
+                  ) : completed.length === 0 ? (
                     <p className="text-sm text-gray-500">
                       No kindness acts completed yet. Start with one small act
                       today!
@@ -173,7 +190,11 @@ const Page: React.FC = () => {
                     </ul>
                   )}
                 </div>
-                <div className="flex justify-end gap-4 mt-2">
+                {/* ===== Pagination Controls ===== */}
+                <nav
+                  aria-label="Pagination"
+                  className="flex justify-end gap-4 mt-2"
+                >
                   <button
                     onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
                     disabled={page === 0}
@@ -194,20 +215,24 @@ const Page: React.FC = () => {
                   >
                     Next
                   </button>
-                </div>
+                </nav>
               </div>
-            </div>
+            </section>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-            {/* Saved Acts Card */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            {/* ===== Saved Acts Card ===== */}
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
                     Saved Acts of Kindness
                   </h2>
-                  {savedActs.length === 0 ? (
+                  {loadingSaved ? (
+                    <p className="text-sm text-gray-500">
+                      Loading list of saved kindness acts…
+                    </p>
+                  ) : savedActs.length === 0 ? (
                     <p className="text-sm text-gray-500">
                       No saved acts here yet – add some acts from the collection
                       and let the good vibes roll!
@@ -238,7 +263,11 @@ const Page: React.FC = () => {
                     </ul>
                   )}
                 </div>
-                <div className="flex justify-end gap-4 mt-2">
+                {/* ===== Pagination Controls ===== */}
+                <nav
+                  aria-label="Pagination"
+                  className="flex justify-end gap-4 mt-2"
+                >
                   <button
                     onClick={() =>
                       setSavedPage((prev) => Math.max(prev - 1, 0))
@@ -263,12 +292,12 @@ const Page: React.FC = () => {
                   >
                     Next
                   </button>
-                </div>
+                </nav>
               </div>
-            </div>
+            </section>
 
-            {/* Share Idea Card */}
-            <div className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
+            {/* ===== Share Idea Card ===== */}
+            <section className="relative before:absolute before:inset-0 before:translate-x-2 before:translate-y-2 before:rounded-lg before:border-2 before:border-dashed before:border-black before:content-['']">
               <div className="relative z-10 border-2 border-black rounded-lg bg-background p-8 h-full flex flex-col justify-between">
                 <div>
                   <h2 className="text-lg font-bold mb-2">
@@ -295,24 +324,27 @@ const Page: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
-          {/* Suggested Acts Table */}
-          <ActTable
-            acts={acts}
-            currentUserId={user?.id}
-            onEdit={(act) => {
-              setSelectedAct(act);
-              setOpenEditModal(true);
-            }}
-            onDelete={(act) => {
-              setSelectedAct(act);
-              setOpenDeleteModal(true);
-            }}
-          />
+          {/* ===== Suggested Acts Table ===== */}
+          <section>
+            <ActTable
+              acts={acts}
+              currentUserId={user?.id}
+              onEdit={(act) => {
+                setSelectedAct(act);
+                setOpenEditModal(true);
+              }}
+              onDelete={(act) => {
+                setSelectedAct(act);
+                setOpenDeleteModal(true);
+              }}
+            />
+          </section>
         </div>
 
+        {/* ===== Modals ===== */}
         <ActForm
           open={openAddModal}
           onClose={() => {
@@ -346,7 +378,7 @@ const Page: React.FC = () => {
             />
           </>
         )}
-      </section>
+      </main>
       <Footer />
     </>
   );

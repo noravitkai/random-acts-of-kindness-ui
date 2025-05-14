@@ -14,6 +14,11 @@ interface ActCardProps {
   children?: ReactNode;
 }
 
+/**
+ * Shows title, description, difficulty tag, and a save/unsave button
+ * @param {ActCardProps} props – includes act info, save state, plus handlers
+ * @returns {JSX.Element} – card component for displaying a kindness act
+ */
 export default function ActCard({
   act,
   isSaved,
@@ -23,6 +28,7 @@ export default function ActCard({
   const { user } = useAuth();
 
   const [savedState, setSavedState] = useState(isSaved);
+  // Update saved state when isSaved prop changes
   useEffect(() => {
     setSavedState(isSaved);
   }, [isSaved]);
@@ -54,14 +60,14 @@ export default function ActCard({
                 aria-label={savedState ? "Unsave Act" : "Save Act"}
                 className="relative group transition-transform ease-in-out duration-300 cursor-pointer"
               >
-                {/* Heart Icon */}
+                {/* ===== Save Button ===== */}
                 {savedState ? (
                   <HeartSolid className="w-6 h-6 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
                 ) : (
                   <HeartOutline className="w-6 h-6 text-gray-400 transform transition-transform duration-300 ease-in-out hover:scale-110" />
                 )}
 
-                {/* Tooltip */}
+                {/* ===== Save Tooltip ===== */}
                 <div
                   className={`absolute left-full top-1/2 z-20 ml-3 -translate-y-1/2 whitespace-nowrap rounded px-3 py-[4px] text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out ${
                     savedState
