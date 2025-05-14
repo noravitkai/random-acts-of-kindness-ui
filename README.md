@@ -33,7 +33,7 @@ npm run build
 
 ## Live Demo
 
-Frontend: [https://random-acts-of-kindness.vercel.app/](https://random-acts-of-kindness.vercel.app/)
+Frontend: [https://randomkindness.vercel.app/](https://randomkindness.vercel.app/)
 
 Backend API Docs: [https://random-acts-of-kindness-api.onrender.com/api/docs/](https://random-acts-of-kindness-api.onrender.com/api/docs/)
 
