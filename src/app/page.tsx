@@ -244,16 +244,25 @@ export default function HomePage() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
-              {acts.map((act) => (
-                <ActCard
-                  key={act._id}
-                  act={act}
-                  onSave={handleSaveAct}
-                  isSaved={savedActs.some((saved) => saved.act === act._id)}
-                />
-              ))}
-            </div>
+            (() => {
+              const sortedActs = [...acts].sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              );
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+                  {sortedActs.map((act) => (
+                    <ActCard
+                      key={act._id}
+                      act={act}
+                      onSave={handleSaveAct}
+                      isSaved={savedActs.some((saved) => saved.act === act._id)}
+                    />
+                  ))}
+                </div>
+              );
+            })()
           )}
         </div>
       </main>
