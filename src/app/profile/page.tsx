@@ -49,7 +49,7 @@ const Page: React.FC = () => {
   const handleMarkAsCompleted = async (savedAct: SavedAct) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/saved/${savedAct._id}/complete`,
+        `https://random-acts-of-kindness-api.onrender.com//api/saved/${savedAct._id}/complete`,
         {
           method: "PUT",
           headers: {

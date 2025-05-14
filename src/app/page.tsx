@@ -65,8 +65,8 @@ export default function HomePage() {
       const savedAct = savedActs.find((saved) => saved.act === actId);
       const isAlreadySaved = !!savedAct;
       const endpoint = isAlreadySaved
-        ? `http://localhost:4000/api/saved/${savedAct._id}`
-        : "http://localhost:4000/api/saved";
+        ? `https://random-acts-of-kindness-api.onrender.com/api/saved/${savedAct._id}`
+        : "https://random-acts-of-kindness-api.onrender.com/api/saved";
       const method = isAlreadySaved ? "DELETE" : "POST";
 
       const res = await fetch(endpoint, {

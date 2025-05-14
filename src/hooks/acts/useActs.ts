@@ -17,7 +17,7 @@ export function useKindnessActs() {
     setLoading(true);
     setError(null);
     try {
-      const url = "http://localhost:4000/api/acts";
+      const url = "https://random-acts-of-kindness-api.onrender.com/api/acts";
       const options = {
         method: "GET",
         headers: {
@@ -60,7 +60,8 @@ export function useUserActs() {
     setLoading(true);
     setError(null);
     try {
-      const url = "http://localhost:4000/api/acts/user";
+      const url =
+        "https://random-acts-of-kindness-api.onrender.com/api/acts/user";
       const options = {
         method: "GET",
         headers: {
@@ -107,7 +108,9 @@ export function useCompletedActs(userId: string) {
 
     setLoading(true);
 
-    fetcher<CompletedAct[]>(`http://localhost:4000/api/completed/${userId}`)
+    fetcher<CompletedAct[]>(
+      `https://random-acts-of-kindness-api.onrender.com/api/completed/${userId}`
+    )
       .then((data) => {
         setCompleted(data || []);
       })
@@ -134,13 +137,16 @@ export function useSavedActs() {
   const fetchSavedActs = useCallback(() => {
     setLoading(true);
 
-    fetcher<SavedAct[]>("http://localhost:4000/api/saved", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "auth-token": localStorage.getItem("lsToken") || "",
-      },
-    })
+    fetcher<SavedAct[]>(
+      "https://random-acts-of-kindness-api.onrender.com/api/saved",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "auth-token": localStorage.getItem("lsToken") || "",
+        },
+      }
+    )
       .then((data) => {
         setSavedActs(data || []);
       })
@@ -159,7 +165,7 @@ export function useSavedActs() {
    */
   async function unsaveAct(savedId: string): Promise<{ message: string }> {
     const result = await fetcher<{ message: string }>(
-      `http://localhost:4000/api/saved/${savedId}`,
+      `https://random-acts-of-kindness-api.onrender.com/api/saved/${savedId}`,
       {
         method: "DELETE",
         headers: {
@@ -181,7 +187,7 @@ export function useSavedActs() {
    */
   async function completeAct(savedId: string): Promise<{ message: string }> {
     const result = await fetcher<{ message: string }>(
-      `http://localhost:4000/api/saved/${savedId}/complete`,
+      `https://random-acts-of-kindness-api.onrender.com/api/saved/${savedId}/complete`,
       {
         method: "PUT",
         headers: {
@@ -222,7 +228,7 @@ export function useAllActs() {
     setError(null);
     try {
       const data = await fetcher<KindnessAct[]>(
-        "http://localhost:4000/api/acts/all",
+        "https://random-acts-of-kindness-api.onrender.com/api/acts/all",
         {
           method: "GET",
           headers: {
@@ -265,14 +271,17 @@ export async function createAct(payload: NewAct): Promise<KindnessAct> {
   // Force pending status for non-admins
   const actPayload = isAdmin ? payload : { ...payload, status: "pending" };
 
-  const result = await fetcher<KindnessAct>("http://localhost:4000/api/acts", {
-    method: "POST",
-    body: JSON.stringify(actPayload),
-    headers: {
-      "Content-Type": "application/json",
-      "auth-token": token,
-    },
-  });
+  const result = await fetcher<KindnessAct>(
+    "https://random-acts-of-kindness-api.onrender.com/api/acts",
+    {
+      method: "POST",
+      body: JSON.stringify(actPayload),
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token": token,
+      },
+    }
+  );
   if (!result) {
     throw new Error("Failed to create: no data returned.");
   }
@@ -297,7 +306,7 @@ export async function updateAct(
   const actPayload = isAdmin ? payload : { ...payload, status: "pending" };
 
   const result = await fetcher<{ message: string; updatedAct: KindnessAct }>(
-    `http://localhost:4000/api/acts/${id}`,
+    `https://random-acts-of-kindness-api.onrender.com/api/acts/${id}`,
     {
       method: "PUT",
       body: JSON.stringify(actPayload),
@@ -323,7 +332,7 @@ export async function deleteAct(id: string): Promise<{ message: string }> {
   const token = localStorage.getItem("lsToken") || "";
 
   const result = await fetcher<{ message: string }>(
-    `http://localhost:4000/api/acts/${id}`,
+    `https://random-acts-of-kindness-api.onrender.com/api/acts/${id}`,
     {
       method: "DELETE",
       headers: {

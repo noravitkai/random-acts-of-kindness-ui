@@ -143,7 +143,7 @@ export function useAuth() {
     setError(null);
     try {
       const res = await fetcher<{ token: string; user: User }>(
-        "http://localhost:4000/api/user/login",
+        "https://random-acts-of-kindness-api.onrender.com/api/user/login",
         {
           method: "POST",
           body: JSON.stringify(data),
@@ -173,7 +173,7 @@ export function useAuth() {
     setError(null);
     try {
       const res = await fetcher<{ message: string; data: User }>(
-        "http://localhost:4000/api/user/register",
+        "https://random-acts-of-kindness-api.onrender.com/api/user/register",
         {
           method: "POST",
           body: JSON.stringify(data),
